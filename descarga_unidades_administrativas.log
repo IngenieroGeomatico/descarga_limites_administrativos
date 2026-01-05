@@ -1,0 +1,579 @@
+2026-01-05T16:09:42+0100 INFO descarga_unidades_administrativas Descargando: ------ CODIGOS POSTALES ------
+2026-01-05T16:09:42+0100 INFO descarga_unidades_administrativas Descargando ZIP de códigos postales: https://www.codigospostales.com/codigos1220n.zip
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 010codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 01xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 020codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 02xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 030codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 031codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 032codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 035codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 036codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 03xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 040codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 04xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 050codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 05xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 060codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 06xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 070codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 072codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 07xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 080codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 081codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 082codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 083codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 084codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 085codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 086codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 087codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 088codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 089codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 08xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 090codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 09xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 100codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 10xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 110codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 111codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 113codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 11xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 120codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 12xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 130codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 13xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 140codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 14xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 150codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 151codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 152codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 15xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 160codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 16xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 170codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 17xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 180codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 18xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 190codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 19xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 200codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 201codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 20xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 210codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 21xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 220codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 22xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 230codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 23xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 240codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 241codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 24xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 250codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 25xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 260codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 26xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 270codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 27xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 280codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 281codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 282codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 283codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 284codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 285codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 286codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 287codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 288codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 289codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 28acodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 28bcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 28ccodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 28dcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 28ecodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 28fcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 28xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 290codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 291codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 292codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 29xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 300codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 301codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 30xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 310codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 31xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 320codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 32xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 330codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 331codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 332codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 33xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 340codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 34xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 350codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 351codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 35xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 360codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 361codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 36xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 370codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 37xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 380codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 381codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 38xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 390codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 39xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 400codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 40xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 410codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 411codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 41xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 420codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 42xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 430codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 431codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 43xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 440codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 44xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 450codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 45xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 460codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 461codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 46xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 470codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 47xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 480codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 481codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 484codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 48xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 490codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 49xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 500codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 50xcodpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 510codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Procesando archivo: 520codpos.txt
+2026-01-05T16:09:43+0100 INFO descarga_unidades_administrativas Total de registros extraídos: 156750
+2026-01-05T16:09:43+0100 ERROR descarga_unidades_administrativas No se pudo guardar ./codigos_postales/
+Traceback (most recent call last):
+  File "c:\Users\aragonva\OneDrive - Ayuntamiento de Madrid\personal\github\descarga_limites_administrativos\lib\descarga_unidad_administrativa.py", line 122, in codigos_postales
+    with open(path+"codigos_postales.json", "w", encoding="utf-8") as fh:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './codigos_postales/codigos_postales.json'
+2026-01-05T16:09:44+0100 WARNING descarga_unidades_administrativas [1/156750] Código 1071 -> HTTP 500 | URL: https://www.cartociudad.es/geocoder/api/geocoder/find?q=1071&type=Codpost&id=1071&outputformat=geojson : <!doctype html><html lang="en"><head><title>HTTP Status 500 – Internal Server Error</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {co
+2026-01-05T16:09:45+0100 WARNING descarga_unidades_administrativas [2/156750] Código 1080 -> HTTP 500 | URL: https://www.cartociudad.es/geocoder/api/geocoder/find?q=1080&type=Codpost&id=1080&outputformat=geojson : <!doctype html><html lang="en"><head><title>HTTP Status 500 – Internal Server Error</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {co
+2026-01-05T16:09:46+0100 INFO descarga_unidades_administrativas [3/156750] Código 1008 -> geometry_type=MultiPolygon
+2026-01-05T16:09:47+0100 INFO descarga_unidades_administrativas [4/156750] Código 1013 -> geometry_type=MultiPolygon
+2026-01-05T16:09:48+0100 INFO descarga_unidades_administrativas [5/156750] Código 1015 -> geometry_type=MultiPolygon
+2026-01-05T16:09:49+0100 INFO descarga_unidades_administrativas [6/156750] Código 1001 -> geometry_type=MultiPolygon
+2026-01-05T16:09:51+0100 INFO descarga_unidades_administrativas [7/156750] Código 1013 -> geometry_type=MultiPolygon
+2026-01-05T16:10:54+0100 INFO descarga_unidades_administrativas Descargando: ------ CODIGOS POSTALES ------
+2026-01-05T16:10:54+0100 INFO descarga_unidades_administrativas Descargando ZIP de códigos postales: https://www.codigospostales.com/codigos1220n.zip
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 010codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 01xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 020codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 02xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 030codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 031codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 032codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 035codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 036codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 03xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 040codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 04xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 050codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 05xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 060codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 06xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 070codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 072codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 07xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 080codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 081codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 082codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 083codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 084codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 085codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 086codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 087codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 088codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 089codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 08xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 090codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 09xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 100codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 10xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 110codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 111codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 113codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 11xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 120codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 12xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 130codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 13xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 140codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 14xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 150codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 151codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 152codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 15xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 160codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 16xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 170codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 17xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 180codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 18xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 190codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 19xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 200codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 201codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 20xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 210codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 21xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 220codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 22xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 230codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 23xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 240codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 241codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 24xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 250codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 25xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 260codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 26xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 270codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 27xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 280codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 281codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 282codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 283codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 284codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 285codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 286codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 287codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 288codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 289codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 28acodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 28bcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 28ccodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 28dcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 28ecodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 28fcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 28xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 290codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 291codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 292codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 29xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 300codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 301codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 30xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 310codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 31xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 320codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 32xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 330codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 331codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 332codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 33xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 340codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 34xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 350codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 351codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 35xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 360codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 361codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 36xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 370codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 37xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 380codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 381codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 38xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 390codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 39xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 400codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 40xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 410codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 411codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 41xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 420codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 42xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 430codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 431codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 43xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 440codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 44xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 450codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 45xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 460codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 461codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 46xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 470codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 47xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 480codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 481codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 484codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 48xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 490codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 49xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 500codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 50xcodpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 510codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Procesando archivo: 520codpos.txt
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Total de registros extraídos: 156750
+2026-01-05T16:10:56+0100 INFO descarga_unidades_administrativas Guardado JSON intermedio en: ./codigos_postales/
+2026-01-05T16:10:56+0100 WARNING descarga_unidades_administrativas [1/156750] Código 1071 -> HTTP 500 | URL: https://www.cartociudad.es/geocoder/api/geocoder/find?q=1071&type=Codpost&id=1071&outputformat=geojson : <!doctype html><html lang="en"><head><title>HTTP Status 500 – Internal Server Error</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {co
+2026-01-05T16:10:58+0100 WARNING descarga_unidades_administrativas [2/156750] Código 1080 -> HTTP 500 | URL: https://www.cartociudad.es/geocoder/api/geocoder/find?q=1080&type=Codpost&id=1080&outputformat=geojson : <!doctype html><html lang="en"><head><title>HTTP Status 500 – Internal Server Error</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {co
+2026-01-05T16:10:59+0100 INFO descarga_unidades_administrativas [3/156750] Código 1008 -> geometry_type=MultiPolygon
+2026-01-05T16:11:00+0100 INFO descarga_unidades_administrativas [4/156750] Código 1013 -> geometry_type=MultiPolygon
+2026-01-05T16:11:01+0100 INFO descarga_unidades_administrativas [5/156750] Código 1015 -> geometry_type=MultiPolygon
+2026-01-05T16:11:02+0100 INFO descarga_unidades_administrativas [6/156750] Código 1001 -> geometry_type=MultiPolygon
+2026-01-05T16:11:15+0100 INFO descarga_unidades_administrativas Descargando: ------ CODIGOS POSTALES ------
+2026-01-05T16:11:22+0100 INFO descarga_unidades_administrativas Descargando: ------ CODIGOS POSTALES ------
+2026-01-05T16:11:38+0100 INFO descarga_unidades_administrativas Descargando: ------ CODIGOS POSTALES ------
+2026-01-05T16:11:55+0100 INFO descarga_unidades_administrativas Descargando: ------ CODIGOS POSTALES ------
+2026-01-05T16:12:24+0100 INFO descarga_unidades_administrativas Descargando: ------ CODIGOS POSTALES ------
+2026-01-05T16:12:24+0100 ERROR descarga_unidades_administrativas No se pudo guardar ./codigos_postales/
+Traceback (most recent call last):
+  File "c:\Users\aragonva\OneDrive - Ayuntamiento de Madrid\personal\github\descarga_limites_administrativos\lib\descarga_unidad_administrativa.py", line 185, in codigos_postales
+    with open(path+"codigos_postales.GeoJSON", "w", encoding="utf-8") as fh:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './codigos_postales/codigos_postales.GeoJSON'
+2026-01-05T16:12:24+0100 INFO descarga_unidades_administrativas Proceso completado.
+2026-01-05T16:12:57+0100 INFO descarga_unidades_administrativas Descargando: ------ CODIGOS POSTALES ------
+2026-01-05T16:12:57+0100 ERROR descarga_unidades_administrativas No se pudo guardar ./codigos_postales/
+Traceback (most recent call last):
+  File "c:\Users\aragonva\OneDrive - Ayuntamiento de Madrid\personal\github\descarga_limites_administrativos\lib\descarga_unidad_administrativa.py", line 185, in codigos_postales
+    with open(path+"codigos_postales.GeoJSON", "w", encoding="utf-8") as fh:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './codigos_postales/codigos_postales.GeoJSON'
+2026-01-05T16:12:57+0100 INFO descarga_unidades_administrativas Proceso completado.
+2026-01-05T16:13:00+0100 INFO descarga_unidades_administrativas Descargando: ------ CODIGOS POSTALES ------
+2026-01-05T16:13:00+0100 ERROR descarga_unidades_administrativas No se pudo guardar ./codigos_postales/
+Traceback (most recent call last):
+  File "c:\Users\aragonva\OneDrive - Ayuntamiento de Madrid\personal\github\descarga_limites_administrativos\lib\descarga_unidad_administrativa.py", line 185, in codigos_postales
+    with open(path+"codigos_postales.GeoJSON", "w", encoding="utf-8") as fh:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './codigos_postales/codigos_postales.GeoJSON'
+2026-01-05T16:13:00+0100 INFO descarga_unidades_administrativas Proceso completado.
+2026-01-05T16:15:08+0100 INFO descarga_unidades_administrativas Descargando: ------ CODIGOS POSTALES ------
+2026-01-05T16:15:08+0100 ERROR descarga_unidades_administrativas No se pudo guardar ./codigos_postales/
+Traceback (most recent call last):
+  File "c:\Users\aragonva\OneDrive - Ayuntamiento de Madrid\personal\github\descarga_limites_administrativos\lib\descarga_unidad_administrativa.py", line 183, in codigos_postales
+    with open(path+"codigos_postales.GeoJSON", "w", encoding="utf-8") as fh:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './codigos_postales/codigos_postales.GeoJSON'
+2026-01-05T16:15:08+0100 INFO descarga_unidades_administrativas Proceso completado.
+2026-01-05T16:16:51+0100 INFO descarga_unidades_administrativas Descargando: ------ CODIGOS POSTALES ------
+2026-01-05T16:17:06+0100 INFO descarga_unidades_administrativas Descargando: ------ CODIGOS POSTALES ------
+2026-01-05T16:17:26+0100 INFO descarga_unidades_administrativas Descargando: ------ CODIGOS POSTALES ------
+2026-01-05T16:17:42+0100 INFO descarga_unidades_administrativas Descargando: ------ CODIGOS POSTALES ------
+2026-01-05T16:17:49+0100 INFO descarga_unidades_administrativas Descargando: ------ CODIGOS POSTALES ------
+2026-01-05T16:18:27+0100 INFO descarga_unidades_administrativas Descargando: ------ CODIGOS POSTALES ------
+2026-01-05T16:18:27+0100 ERROR descarga_unidades_administrativas No se pudo leer ./codigos_postales/
+Traceback (most recent call last):
+  File "c:\Users\aragonva\OneDrive - Ayuntamiento de Madrid\personal\github\descarga_limites_administrativos\lib\descarga_unidad_administrativa.py", line 131, in codigos_postales
+    codPostArray = json.load(fh)
+  File "C:\Users\aragonva\AppData\Local\Programs\Python\Python314\Lib\json\__init__.py", line 298, in load
+    return loads(fp.read(),
+        cls=cls, object_hook=object_hook,
+        parse_float=parse_float, parse_int=parse_int,
+        parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+  File "C:\Users\aragonva\AppData\Local\Programs\Python\Python314\Lib\json\__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\aragonva\AppData\Local\Programs\Python\Python314\Lib\json\decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aragonva\AppData\Local\Programs\Python\Python314\Lib\json\decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+2026-01-05T16:18:28+0100 ERROR descarga_unidades_administrativas No se pudo guardar ./codigos_postales/
+Traceback (most recent call last):
+  File "c:\Users\aragonva\OneDrive - Ayuntamiento de Madrid\personal\github\descarga_limites_administrativos\lib\descarga_unidad_administrativa.py", line 188, in codigos_postales
+    with open(path+"codigos_postales.GeoJSON", "w", encoding="utf-8") as fh:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './codigos_postales/codigos_postales.GeoJSON'
+2026-01-05T16:18:28+0100 INFO descarga_unidades_administrativas Proceso completado.
+2026-01-05T16:18:38+0100 INFO descarga_unidades_administrativas Descargando: ------ CODIGOS POSTALES ------
+2026-01-05T16:18:38+0100 ERROR descarga_unidades_administrativas No se pudo leer ./codigos_postales/
+Traceback (most recent call last):
+  File "c:\Users\aragonva\OneDrive - Ayuntamiento de Madrid\personal\github\descarga_limites_administrativos\lib\descarga_unidad_administrativa.py", line 131, in codigos_postales
+    codPostArray = json.load(fh)
+  File "C:\Users\aragonva\AppData\Local\Programs\Python\Python314\Lib\json\__init__.py", line 298, in load
+    return loads(fp.read(),
+        cls=cls, object_hook=object_hook,
+        parse_float=parse_float, parse_int=parse_int,
+        parse_constant=parse_constant, object_pairs_hook=object_pairs_hook, **kw)
+  File "C:\Users\aragonva\AppData\Local\Programs\Python\Python314\Lib\json\__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\aragonva\AppData\Local\Programs\Python\Python314\Lib\json\decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\aragonva\AppData\Local\Programs\Python\Python314\Lib\json\decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+2026-01-05T16:18:38+0100 ERROR descarga_unidades_administrativas No se pudo guardar ./codigos_postales/
+Traceback (most recent call last):
+  File "c:\Users\aragonva\OneDrive - Ayuntamiento de Madrid\personal\github\descarga_limites_administrativos\lib\descarga_unidad_administrativa.py", line 188, in codigos_postales
+    with open(path+"codigos_postales.GeoJSON", "w", encoding="utf-8") as fh:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './codigos_postales/codigos_postales.GeoJSON'
+2026-01-05T16:18:38+0100 INFO descarga_unidades_administrativas Proceso completado.
+2026-01-05T16:20:03+0100 INFO descarga_unidades_administrativas Descargando: ------ CODIGOS POSTALES ------
+2026-01-05T16:20:03+0100 INFO descarga_unidades_administrativas Descargando ZIP de códigos postales: https://www.codigospostales.com/codigos1220n.zip
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 010codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 01xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 020codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 02xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 030codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 031codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 032codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 035codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 036codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 03xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 040codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 04xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 050codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 05xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 060codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 06xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 070codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 072codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 07xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 080codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 081codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 082codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 083codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 084codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 085codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 086codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 087codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 088codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 089codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 08xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 090codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 09xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 100codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 10xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 110codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 111codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 113codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 11xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 120codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 12xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 130codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 13xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 140codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 14xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 150codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 151codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 152codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 15xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 160codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 16xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 170codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 17xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 180codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 18xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 190codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 19xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 200codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 201codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 20xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 210codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 21xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 220codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 22xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 230codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 23xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 240codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 241codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 24xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 250codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 25xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 260codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 26xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 270codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 27xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 280codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 281codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 282codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 283codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 284codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 285codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 286codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 287codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 288codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 289codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 28acodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 28bcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 28ccodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 28dcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 28ecodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 28fcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 28xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 290codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 291codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 292codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 29xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 300codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 301codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 30xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 310codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 31xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 320codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 32xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 330codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 331codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 332codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 33xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 340codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 34xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 350codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 351codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 35xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 360codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 361codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 36xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 370codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 37xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 380codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 381codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 38xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 390codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 39xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 400codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 40xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 410codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 411codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 41xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 420codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 42xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 430codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 431codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 43xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 440codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 44xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 450codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 45xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 460codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 461codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 46xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 470codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 47xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 480codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 481codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 484codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 48xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 490codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 49xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 500codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 50xcodpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 510codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Procesando archivo: 520codpos.txt
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Total de registros extraídos: 156750
+2026-01-05T16:20:05+0100 INFO descarga_unidades_administrativas Guardado JSON intermedio en: ./codigos_postales/
+2026-01-05T16:20:06+0100 WARNING descarga_unidades_administrativas [1/156750] Código 1071 -> HTTP 500 | URL: https://www.cartociudad.es/geocoder/api/geocoder/find?q=1071&type=Codpost&id=1071&outputformat=geojson : <!doctype html><html lang="en"><head><title>HTTP Status 500 – Internal Server Error</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {co
+2026-01-05T16:20:07+0100 WARNING descarga_unidades_administrativas [2/156750] Código 1080 -> HTTP 500 | URL: https://www.cartociudad.es/geocoder/api/geocoder/find?q=1080&type=Codpost&id=1080&outputformat=geojson : <!doctype html><html lang="en"><head><title>HTTP Status 500 – Internal Server Error</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {co
+2026-01-05T16:20:19+0100 INFO descarga_unidades_administrativas Descargando: ------ CODIGOS POSTALES ------
+2026-01-05T16:20:19+0100 INFO descarga_unidades_administrativas Cargado JSON desde: ./codigos_postales/
+2026-01-05T16:20:20+0100 WARNING descarga_unidades_administrativas [1/156750] Código 1071 -> HTTP 500 | URL: https://www.cartociudad.es/geocoder/api/geocoder/find?q=1071&type=Codpost&id=1071&outputformat=geojson : <!doctype html><html lang="en"><head><title>HTTP Status 500 – Internal Server Error</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {co
+2026-01-05T16:20:21+0100 WARNING descarga_unidades_administrativas [2/156750] Código 1080 -> HTTP 500 | URL: https://www.cartociudad.es/geocoder/api/geocoder/find?q=1080&type=Codpost&id=1080&outputformat=geojson : <!doctype html><html lang="en"><head><title>HTTP Status 500 – Internal Server Error</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {co
