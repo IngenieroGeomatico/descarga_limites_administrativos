@@ -12,46 +12,88 @@ import requests
 # =========================
 # Configuración de logging
 # =========================
-
-# logger.py (o en el mismo script)
-def setup_logger(level_name: str = None):
-    import logging, os
-    from logging.handlers import RotatingFileHandler
-
-    level_name = (level_name or os.getenv("LOG_LEVEL", "INFO")).upper()
-    level = getattr(logging, level_name, logging.INFO)
-
-    logger = logging.getLogger("descarga_unidades_administrativas")
-    logger.setLevel(level)
-    logger.propagate = False
-
-    fmt = logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s",
-                            datefmt="%Y-%m-%dT%H:%M:%S%z")
-    sh = logging.StreamHandler(); sh.setFormatter(fmt); sh.setLevel(level)
-    fh = RotatingFileHandler("descarga_unidades_administrativas.log", maxBytes=5_000_000, backupCount=3)
-    fh.setFormatter(fmt); fh.setLevel(level)
-
-    # Evitar duplicados si ya existen handlers
-    if not logger.handlers:
-        logger.addHandler(sh)
-        logger.addHandler(fh)
-    else:
-        # Actualiza niveles de handlers existentes
-        for h in logger.handlers:
-            h.setLevel(level)
-
-    return logger
+logging.basicConfig(
+                    format='%(asctime)s - %(levelname)s - %(message)s',
+                    filename="descarga_unidades_administrativas.log",
+                    filemode='w',
+                    encoding="utf-8"
+)
+logger = logging.getLogger(__name__)
 
 
 # =========================
 # Lógica principal
 # =========================
+
+"""
+https://api-features.ign.es/collections/administrativeunit/items?f=json&limit=1
+https://api-features.ign.es/collections/administrativeunit/items?f=json&limit=1&nationallevelname=Municipio
+https://api-features.ign.es/collections/administrativeunit/items?f=json&limit=1&nationallevelname=Pa%C3%ADs
+https://api-features.ign.es/collections/administrativeunit/items?f=json&limit=1&nationallevelname=Comunidad%20aut%C3%B3noma
+https://api-features.ign.es/collections/administrativeunit/items?f=json&limit=1&nationallevelname=Provincia
+"""
+
+def pais(path=None, pag = 50):
+    logger.info("Descargando: ------ PAÍS - IGN ------")
+
+    session = requests.Session()
+
+    url_ori = "https://api-features.ign.es/collections/administrativeunit/items?f=json&nationallevelname=Pa%C3%ADs"
+
+    url_limit1 = url_ori + "&limit=1"
+
+    try:
+        response = session.get(url_limit1, timeout=20)
+        status = response.status_code
+
+        if status == 200:
+            data = response.json()
+
+            num_obj_geo = data["numberMatched"]
+
+            logger.info(
+                    "Número de objetos grográficos = %s",
+                    num_obj_geo
+            )
+
+        else:
+            logger.warning(
+                "HTTP %d | URL: %s : %s",
+                status, url_limit1, response.text[:300]
+            )
+
+    except requests.exceptions.Timeout:
+        logger.warning(" timeout (20s)",)
+    except requests.exceptions.RequestException as e:
+        logger.error("Error de petición: %s | URL: %s", e, url_limit1)
+    except Exception as e:
+        logger.exception("Error procesando respuesta  %s | URL: %s", e, url_limit1)
+
+    num_obj_geo = None
+    if not num_obj_geo:
+        logger.error("No se pudo continuar con la descarga")
+        raise ValueError("No se pudo continuar con la descarga")
+    
+    if num_obj_geo > pag:
+        pass
+    else:
+        
+        contador = 0
+        while True:
+            contador += 1
+            print(f"Iteración {contador}")
+            if contador == 5:
+                break
+
+
+
+
 def codigos_postales(path=None, descarcaID=True):
     """
     Descarga un ZIP con tablas de códigos postales, extrae pares {cod, name},
     y consulta la API de CartoCiudad por cada código (en GEOJSON).
     """
-    logger.info("Descargando: ------ CODIGOS POSTALES ------")
+    logger.info("Descargando: ------ CODIGOS POSTALES - Geocoder ------")
 
     if descarcaID:
 
@@ -195,7 +237,10 @@ def codigos_postales(path=None, descarcaID=True):
     return
 
 
+
+
+
 if __name__ == "__main__":
-    # Puedes cambiar el nivel con:  LOG_LEVEL=DEBUG python script.py
-    logger = setup_logger("INFO")   # "DEBUG" "INFO", "WARNING", "ERROR"
-    codigos_postales(path="./codigos_postales/", descarcaID=False)
+    logger.setLevel(logging.DEBUG) # "DEBUG" "INFO", "WARNING", "ERROR"
+    # codigos_postales(path="./codigos_postales/", descarcaID=False)
+    pais(path="./pais/")
