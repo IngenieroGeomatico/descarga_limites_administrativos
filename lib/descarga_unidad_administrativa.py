@@ -24,6 +24,9 @@ logger = logging.getLogger(__name__)
 # =========================
 # Lógica principal
 # =========================
+"""
+https://ec.europa.eu/eurostat/web/gisco/geodata
+"""
 pag_defecto = 50
 
 def pais(path=None, pag=pag_defecto):
