@@ -24,8 +24,9 @@ logger = logging.getLogger(__name__)
 # =========================
 # Lógica principal
 # =========================
+pag_defecto = 50
 
-def pais(path=None, pag=50):
+def pais(path=None, pag=pag_defecto):
     logger.info("Descargando: ------ PAÍS - IGN ------")
 
     session = requests.Session()
@@ -118,7 +119,7 @@ def pais(path=None, pag=50):
     logger.info("Proceso completado.")
     return
 
-def comunidades_autonomas(path=None, pag=50):
+def comunidades_autonomas(path=None, pag=pag_defecto):
     logger.info("Descargando: ------ CCAA - IGN ------")
 
     session = requests.Session()
@@ -211,7 +212,7 @@ def comunidades_autonomas(path=None, pag=50):
     logger.info("Proceso completado.")
     return
 
-def provincia(path=None, pag=50):
+def provincia(path=None, pag=pag_defecto):
     logger.info("Descargando: ------ Provincia - IGN ------")
 
     session = requests.Session()
@@ -304,7 +305,7 @@ def provincia(path=None, pag=50):
     logger.info("Proceso completado.")
     return
 
-def municipio(path=None, pag=50):
+def municipio(path=None, pag=pag_defecto):
     logger.info("Descargando: ------ Municipio - IGN ------")
 
     session = requests.Session()
