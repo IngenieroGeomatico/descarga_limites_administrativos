@@ -13,10 +13,10 @@ import requests
 # Configuración de logging
 # =========================
 logging.basicConfig(
-                    format='%(asctime)s - %(levelname)s - %(message)s',
-                    filename="descarga_unidades_administrativas.log",
-                    filemode='w',
-                    encoding="utf-8"
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    filename="descarga_unidades_administrativas.log",
+    filemode="w",
+    encoding="utf-8",
 )
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,8 @@ https://api-features.ign.es/collections/administrativeunit/items?f=json&limit=1&
 https://api-features.ign.es/collections/administrativeunit/items?f=json&limit=1&nationallevelname=Provincia
 """
 
-def pais(path=None, pag = 50):
+
+def pais(path=None, pag=50):
     logger.info("Descargando: ------ PAÍS - IGN ------")
 
     session = requests.Session()
@@ -51,42 +52,80 @@ def pais(path=None, pag = 50):
 
             num_obj_geo = data["numberMatched"]
 
-            logger.info(
-                    "Número de objetos grográficos = %s",
-                    num_obj_geo
-            )
+            logger.info("Número de objetos grográficos = %s", num_obj_geo)
 
         else:
             logger.warning(
-                "HTTP %d | URL: %s : %s",
-                status, url_limit1, response.text[:300]
+                "HTTP %d | URL: %s : %s", status, url_limit1, response.text[:300]
             )
 
     except requests.exceptions.Timeout:
-        logger.warning(" timeout (20s)",)
+        logger.warning(
+            " timeout (20s)",
+        )
     except requests.exceptions.RequestException as e:
         logger.error("Error de petición: %s | URL: %s", e, url_limit1)
     except Exception as e:
         logger.exception("Error procesando respuesta  %s | URL: %s", e, url_limit1)
 
-    num_obj_geo = None
     if not num_obj_geo:
         logger.error("No se pudo continuar con la descarga")
         raise ValueError("No se pudo continuar con la descarga")
-    
-    if num_obj_geo > pag:
-        pass
+
+    if num_obj_geo < pag:
+        response = session.get(url_ori, timeout=20)
+        status = response.status_code
+
+        geojson = response.json()
+        numberReturned = geojson["numberReturned"]
+
+        prueba = geojson["features"][0]["geometry"]["type"]
+        logger.info(
+                "num_obj_geo %s -> geometry_type=%s",
+                num_obj_geo,
+                prueba,
+            )
     else:
-        
-        contador = 0
+        offset = 0
+        geojson= {"type": "FeatureCollection", "features": []}
         while True:
-            contador += 1
-            print(f"Iteración {contador}")
-            if contador == 5:
+            url_ori_offset = url_ori + f"&offset={offset}"
+            response = session.get(url_ori_offset, timeout=20)
+            status = response.status_code
+
+            data = response.json()
+            numberReturned = data["numberReturned"]
+
+            
+            if numberReturned == 0:
                 break
+            
+            features = data.get("features", [])
+            geometry_type = (
+                features[0]["geometry"]["type"]
+                if features and "geometry" in features[0]
+                else None
+            )
+            geojson["features"].append(features[0])
 
+            logger.info(
+                    "offset %s  / num_obj_geo %s -> geometry_type=%s",
+                    offset,
+                    num_obj_geo,
+                    geometry_type,
+                )
+            offset += pag
 
+            time.sleep(1)
 
+    try:
+        with open(path + "pais.GeoJSON", "w", encoding="utf-8") as fh:
+            json.dump(geojson, fh, ensure_ascii=False, indent=2)
+        logger.info("Guardado GeoJSON: %s", path)
+    except Exception:
+        logger.exception("No se pudo guardar %s", path)
+    logger.info("Proceso completado.")
+    return
 
 def codigos_postales(path=None, descarcaID=True):
     """
@@ -96,7 +135,6 @@ def codigos_postales(path=None, descarcaID=True):
     logger.info("Descargando: ------ CODIGOS POSTALES - Geocoder ------")
 
     if descarcaID:
-
         URLzipCod = "https://www.codigospostales.com/codigos1220n.zip"
 
         logger.info("Descargando ZIP de códigos postales: %s", URLzipCod)
@@ -141,12 +179,16 @@ def codigos_postales(path=None, descarcaID=True):
                                 linea = linea.replace(";", ":")
                             lineaArray = linea.split(":")
                             if len(lineaArray) < 2:
-                                logger.debug("Línea inválida %s:%d → %r", name, lineno, linea)
+                                logger.debug(
+                                    "Línea inválida %s:%d → %r", name, lineno, linea
+                                )
                                 continue
                             cod = lineaArray[0].strip()
                             nombre = lineaArray[1].strip()
                             if not cod or not nombre:
-                                logger.debug("Campos vacíos %s:%d → %r", name, lineno, linea)
+                                logger.debug(
+                                    "Campos vacíos %s:%d → %r", name, lineno, linea
+                                )
                                 continue
                             codPostArray.append({"cod": cod, "name": nombre})
 
@@ -176,16 +218,15 @@ def codigos_postales(path=None, descarcaID=True):
         except Exception:
             logger.exception(f"No se pudo leer {path}")
 
-
     # Consulta a Geocoder por cada código
     session = requests.Session()
     headers = {
         "Origin": "https://www.ign.es",
         "Referer": "https://www.ign.es",
-        "User-Agent": "Mozilla/5.0"
+        "User-Agent": "Mozilla/5.0",
     }
 
-    geojson_cod_postales = {'type': 'FeatureCollection', 'features': []}
+    geojson= {"type": "FeatureCollection", "features": []}
 
     for i, codi in enumerate(codPostArray, start=1):
         codigo = codi["cod"].lstrip("0")  # quitar ceros a la izquierda
@@ -204,32 +245,57 @@ def codigos_postales(path=None, descarcaID=True):
                 # Validaciones defensivas
                 features = data.get("features", [])
                 geometry_type = (
-                    features[0]["geometry"]["type"] if features and "geometry" in features[0] else None
+                    features[0]["geometry"]["type"]
+                    if features and "geometry" in features[0]
+                    else None
                 )
-                geojson_cod_postales["features"].append(features[0])
+                geojson["features"].append(features[0])
                 logger.info(
                     "[%d/%d] Código %s -> geometry_type=%s",
-                    i, len(codPostArray), codigo, geometry_type
+                    i,
+                    len(codPostArray),
+                    codigo,
+                    geometry_type,
                 )
             else:
                 logger.warning(
                     "[%d/%d] Código %s -> HTTP %d | URL: %s : %s",
-                    i, len(codPostArray), codigo, status, url, response.text[:300]
+                    i,
+                    len(codPostArray),
+                    codigo,
+                    status,
+                    url,
+                    response.text[:300],
                 )
 
         except requests.exceptions.Timeout:
-            logger.warning("[%d/%d] Código %s -> timeout (20s)", i, len(codPostArray), codigo)
+            logger.warning(
+                "[%d/%d] Código %s -> timeout (20s)", i, len(codPostArray), codigo
+            )
         except requests.exceptions.RequestException as e:
-            logger.error("[%d/%d] Código %s -> error de petición: %s | URL: %s", i, len(codPostArray), codigo, e, url)
+            logger.error(
+                "[%d/%d] Código %s -> error de petición: %s | URL: %s",
+                i,
+                len(codPostArray),
+                codigo,
+                e,
+                url,
+            )
         except Exception:
-            logger.exception("[%d/%d] Código %s ->  error procesando respuesta | URL: %s", i, len(codPostArray), codigo, url)
+            logger.exception(
+                "[%d/%d] Código %s ->  error procesando respuesta | URL: %s",
+                i,
+                len(codPostArray),
+                codigo,
+                url,
+            )
 
         # Respeto de rate-limit (ajusta si hace falta)
         time.sleep(1)
 
     try:
-        with open(path+"codigos_postales.GeoJSON", "w", encoding="utf-8") as fh:
-            json.dump(geojson_cod_postales, fh, ensure_ascii=False, indent=2)
+        with open(path + "codigos_postales.GeoJSON", "w", encoding="utf-8") as fh:
+            json.dump(geojson, fh, ensure_ascii=False, indent=2)
         logger.info("Guardado GeoJSON: %s", path)
     except Exception:
         logger.exception("No se pudo guardar %s", path)
@@ -237,10 +303,7 @@ def codigos_postales(path=None, descarcaID=True):
     return
 
 
-
-
-
 if __name__ == "__main__":
-    logger.setLevel(logging.DEBUG) # "DEBUG" "INFO", "WARNING", "ERROR"
+    logger.setLevel(logging.DEBUG)  # "DEBUG" "INFO", "WARNING", "ERROR"
     # codigos_postales(path="./codigos_postales/", descarcaID=False)
     pais(path="./pais/")

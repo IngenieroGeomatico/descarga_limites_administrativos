@@ -1,0 +1,10 @@
+2026-01-09 10:13:16,584 - INFO - Descargando: ------ PAÍS - IGN ------
+2026-01-09 10:13:29,218 - INFO - Número de objetos grográficos = 1
+2026-01-09 10:13:41,130 - INFO - num_obj_geo 1 -> geometry_type=MultiPolygon
+2026-01-09 10:13:41,130 - ERROR - No se pudo guardar ./pais/
+Traceback (most recent call last):
+  File "c:\Users\aragonva\OneDrive - Ayuntamiento de Madrid\personal\github\descarga_limites_administrativos\lib\descarga_unidad_administrativa.py", line 122, in pais
+    with open(path + "pais.GeoJSON", "w", encoding="utf-8") as fh:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: './pais/pais.GeoJSON'
+2026-01-09 10:13:41,132 - INFO - Proceso completado.
