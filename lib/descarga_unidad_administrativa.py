@@ -573,6 +573,10 @@ def codigos_postales(path=None, descarcaID=True):
     logger.info("Proceso completado.")
     return
 
+def secciones_censales(path=None):
+    url = "https://www.ine.es/prodyser/cartografia/seccionado_2025.zip"
+    return
+
 
 if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)  # "DEBUG" "INFO", "WARNING", "ERROR"
