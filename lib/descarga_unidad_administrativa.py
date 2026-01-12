@@ -4,13 +4,15 @@ import os
 import sys
 import time
 import json
+import shapely
+import geojson
 import zipfile
 import logging
 import requests
-import tempfile
-import shapefile as sf
+import shapefile
 from typing import Optional
 from pyproj import CRS, Transformer
+from shapely.geometry import mapping
 from logging.handlers import RotatingFileHandler
 
 
@@ -32,8 +34,8 @@ logger = logging.getLogger(__name__)
 # =========================
 BASE_URL_API_IGN = "https://api-features.ign.es/collections/administrativeunit/items"
 TIMEOUT = 20
-DEFAULT_PAGE_SIZE = 50
-SLEEP_BETWEEN_REQUESTS = 1.0
+DEFAULT_PAGE_SIZE = 20
+SLEEP_BETWEEN_REQUESTS = 3.0
 
 
 # =========================
@@ -45,23 +47,37 @@ https://ec.europa.eu/eurostat/web/gisco/geodata
 """
 
 def IGN_pais(path: Optional[str] = None, pag: int = DEFAULT_PAGE_SIZE):
-    descargar_nivel_administrativo("País", path, pag)
+    gjson_name = "IGN_pais"
+    gjson=descargar_nivel_administrativo("País", path, pag, gjson_name)
+    logger.info("Proceso completado.")
+    return gjson, gjson_name
 
 def IGN_comunidades_autonomas(path: Optional[str] = None, pag: int = DEFAULT_PAGE_SIZE):
-    descargar_nivel_administrativo("Comunidad autónoma", path, pag)
+    gjson_name = "IGN_comunidades_autonomas"
+    gjson = descargar_nivel_administrativo("Comunidad autónoma", path, pag, gjson_name)
+    logger.info("Proceso completado.")
+    return gjson, gjson_name
 
 def IGN_provincias(path: Optional[str] = None, pag: int = DEFAULT_PAGE_SIZE):
-    descargar_nivel_administrativo("Provincia", path, pag)
+    gjson_name = "IGN_provincias"
+    gjson = descargar_nivel_administrativo("Provincia", path, pag, gjson_name)
+    logger.info("Proceso completado.")
+    return gjson, gjson_name
 
 def IGN_municipios(path: Optional[str] = None, pag: int = DEFAULT_PAGE_SIZE):
-    descargar_nivel_administrativo("Municipio", path, pag)
+    gjson_name = "IGN_municipios"
+    gjson = descargar_nivel_administrativo("Municipio", path, pag, gjson_name)
+    logger.info("Proceso completado.")
+    return gjson, gjson_name
 
 def IGN_codigos_postales(path: Optional[str], descarga_ID_json: bool=True):
     """
     Descarga un ZIP con tablas de códigos postales, extrae pares {cod, name},
-    y consulta la API de CartoCiudad por cada código (en GEOJSON).
+    y consulta la API de CartoCiudad por cada código (en gjson).
     """
     logger.info("Descargando: ------ CODIGOS POSTALES - Geocoder ------")
+
+    gjson_name = "IGN_codigos_postales"
 
     if descarga_ID_json:
         URLzipCod = "https://www.codigospostales.com/codigos1220n.zip"
@@ -141,7 +157,6 @@ def IGN_codigos_postales(path: Optional[str], descarga_ID_json: bool=True):
     else:
         try:
             with open("codigos_postales.json", "r", encoding="utf-8") as fh:
-                print(fh)
                 codPostArray = json.load(fh)
             logger.info(f"Cargado JSON desde: {path}")
         except Exception:
@@ -155,14 +170,14 @@ def IGN_codigos_postales(path: Optional[str], descarga_ID_json: bool=True):
         "User-Agent": "Mozilla/5.0",
     }
 
-    geojson= {"type": "FeatureCollection", "features": []}
+    gjson= {"type": "FeatureCollection", "features": []}
 
     for i, codi in enumerate(codPostArray, start=1):
         codigo = codi["cod"].lstrip("0")  # quitar ceros a la izquierda
         # OJO: usa '&' en la URL real, no '&amp;'
         url = (
             "https://www.cartociudad.es/geocoder/api/geocoder/find"
-            f"?q={codigo}&type=Codpost&id={codigo}&outputformat=geojson"
+            f"?q={codigo}&type=Codpost&id={codigo}&outputformat=gjson"
         )
 
         try:
@@ -178,7 +193,7 @@ def IGN_codigos_postales(path: Optional[str], descarga_ID_json: bool=True):
                     if features and "geometry" in features[0]
                     else None
                 )
-                geojson["features"].append(features[0])
+                gjson["features"].append(features[0])
                 logger.info(
                     "[%d/%d] Código %s -> geometry_type=%s",
                     i,
@@ -220,26 +235,23 @@ def IGN_codigos_postales(path: Optional[str], descarga_ID_json: bool=True):
             )
 
         # Respeto de rate-limit (ajusta si hace falta)
-        time.sleep(1)
+        time.sleep(SLEEP_BETWEEN_REQUESTS)
 
-    try:
-        with open(path + "codigos_postales.GeoJSON", "w", encoding="utf-8") as fh:
-            json.dump(geojson, fh, ensure_ascii=False, indent=2)
-        logger.info("Guardado GeoJSON: %s", path)
-    except Exception:
-        logger.exception("No se pudo guardar %s", path)
+    save_geojson(gjson, path, gjson_name)
     logger.info("Proceso completado.")
-    return
+    return gjson, gjson_name
 
 def INE_secciones_censales(path: Optional[str]):
     """
-    Descarga el shapefile de secciones censales (INE) dentro de un ZIP y lo convierte a GeoJSON.
+    Descarga el shapefile. de secciones censales (INE) dentro de un ZIP y lo convierte a gjson.
     - Lee .shp/.shx/.dbf directamente desde el ZIP (sin extraer a disco).
     - Reproyecta a EPSG:4326 si hay .prj.
-    - Devuelve un dict GeoJSON (FeatureCollection). Si `path` no es None, guarda el GeoJSON en esa ruta.
+    - Devuelve un dict gjson (FeatureCollection). Si `path` no es None, guarda el gjson en esa ruta.
     """
     URLzipsec_cens = "https://www.ine.es/prodyser/cartografia/seccionado_2025.zip"
     to_epsg = 4326  # Cambia a None si quieres mantener el CRS original
+
+    gjson_name = "INE_secciones_censales"
 
     logger.info("Descargando ZIP de secciones censales: %s", URLzipsec_cens)
 
@@ -260,7 +272,7 @@ def INE_secciones_censales(path: Optional[str]):
             names = zf.namelist()
             logger.debug("Contenido del ZIP: %s", names)
 
-            # Localizar componentes del shapefile
+            # Localizar componentes del shapefile.
             shp_name = shx_name = dbf_name = prj_name = None
             for name in names:
                 low = name.lower()
@@ -270,7 +282,7 @@ def INE_secciones_censales(path: Optional[str]):
                 elif low.endswith(".prj"): prj_name = name
 
             if not (shp_name and shx_name and dbf_name):
-                logger.error("El ZIP no contiene un shapefile completo (.shp/.shx/.dbf).")
+                logger.error("El ZIP no contiene un shapefile. completo (.shp/.shx/.dbf).")
                 return []
 
             # Abrir streams directamente del ZIP
@@ -305,7 +317,7 @@ def INE_secciones_censales(path: Optional[str]):
                     transformer = None
 
             # Reader con encoding Latin-1 para DBF
-            reader = sf.Reader(shp=shp_f, shx=shx_f, dbf=dbf_f, encoding="latin-1")
+            reader = shapefile.Reader(shp=shp_f, shx=shx_f, dbf=dbf_f, encoding="latin-1")
             fields = reader.fields[1:]
             field_names = [f[0] for f in fields]
 
@@ -317,20 +329,20 @@ def INE_secciones_censales(path: Optional[str]):
 
             def shape_to_geom(shape):
                 t = shape.shapeType
-                if t in [sf.POINT, sf.POINTZ, sf.POINTM]:
+                if t in [shapefile.POINT, shapefile.POINTZ, shapefile.POINTM]:
                     x, y = shape.points[0]
                     x, y = project_point(x, y)
                     return {"type": "Point", "coordinates": [x, y]}
-                elif t in [sf.MULTIPOINT, sf.MULTIPOINTZ, sf.MULTIPOINTM]:
+                elif t in [shapefile.MULTIPOINT, shapefile.MULTIPOINTZ, shapefile.MULTIPOINTM]:
                     return {"type": "MultiPoint", "coordinates": project_coords(shape.points)}
-                elif t in [sf.POLYLINE, sf.POLYLINEZ, sf.POLYLINEM]:
+                elif t in [shapefile.POLYLINE, shapefile.POLYLINEZ, shapefile.POLYLINEM]:
                     parts = list(shape.parts) + [len(shape.points)]
                     lines = []
                     for i in range(len(parts) - 1):
                         seg = shape.points[parts[i]:parts[i+1]]
                         lines.append(project_coords(seg))
                     return {"type": "LineString", "coordinates": lines[0]} if len(lines) == 1 else {"type":"MultiLineString","coordinates":lines}
-                elif t in [sf.POLYGON, sf.POLYGONZ, sf.POLYGONM]:
+                elif t in [shapefile.POLYGON, shapefile.POLYGONZ, shapefile.POLYGONM]:
                     parts = list(shape.parts) + [len(shape.points)]
                     rings = []
                     for i in range(len(parts) - 1):
@@ -350,14 +362,12 @@ def INE_secciones_censales(path: Optional[str]):
             reader.close()
             shp_f.close(); shx_f.close(); dbf_f.close()
 
-            fc = {"type": "FeatureCollection", "features": features}
+            gjson = {"type": "FeatureCollection", "features": features}
 
-            if path:
-                with open(path, "w", encoding="utf-8") as f:
-                    json.dump(fc, f, ensure_ascii=False)
-                logger.info("GeoJSON guardado en: %s", path)
+            save_geojson(gjson, path, gjson_name)
+            logger.info("Proceso completado.")
 
-            return
+            return gjson, gjson_name
 
     except zipfile.BadZipFile:
         logger.error("El archivo descargado no es un ZIP válido.")
@@ -367,18 +377,18 @@ def INE_secciones_censales(path: Optional[str]):
         return []
 
 def eurostat_countries(path: Optional[str], scale: Optional[str] = "60M"):
-
+    gjson_name = "eurostat_countries"
     scales = ["60M", "20M", "10M", "03M", "01M"]
     if not scale in scales:
         raise ValueError(f"scale {scale} no está permitido. Los valores permitidos son: {scales}")
 
-    url = f"https://gisco-services.ec.europa.eu/distribution/v2/countries/geojson/CNTR_RG_{scale}_2024_4326.geojson"
+    url = f"https://gisco-services.ec.europa.eu/distribution/v2/countries/gjson/CNTR_RG_{scale}_2024_4326.gjson"
 
     try:
         resp = requests.get(url, timeout=TIMEOUT)
         resp.raise_for_status()
-        data = resp.json()
-        logger.info("Total de objetos encontrados: %d", len(data["features"]))
+        gjson = resp.json()
+        logger.info("Total de objetos encontrados: %d", len(gjson["features"]))
 
     except requests.Timeout:
         logger.warning("Timeout al consultar número total de objetos")
@@ -386,9 +396,10 @@ def eurostat_countries(path: Optional[str], scale: Optional[str] = "60M"):
         logger.error("Error HTTP al obtener conteo: %s", e)
     except Exception as e:
         logger.exception("Error inesperado al obtener conteo: %s", e)
-
-    save_geojson(data, path)
-    return
+    
+    save_geojson(gjson, path, gjson_name)
+    logger.info("Proceso completado.")
+    return gjson, gjson_name
 
 # =========================
 # Funciones transversales
@@ -424,13 +435,14 @@ def download_all_features(
     if total is None:
         raise ValueError("No se pudo obtener el número total de elementos")
 
-    geojson = {"type": "FeatureCollection", "features": []}
+    gjson = {"type": "FeatureCollection", "features": []}
 
     if total == 0:
         logger.warning("No se encontraron elementos")
-        return geojson
+        return gjson
 
     offset = 0
+    total_returned = 0
     while True:
         url_params = params.copy()
         url_params["f"] = "json"
@@ -446,12 +458,14 @@ def download_all_features(
 
             features = page.get("features", [])
             returned = page.get("numberReturned", 0)
+            total_returned += returned
+
 
             if returned == 0:
                 break
 
             # Guardamos TODAS las features de la página (no solo la primera)
-            geojson["features"].extend(features)
+            gjson["features"].extend(features)
 
             # Logging de progreso
             geometry_type = (
@@ -460,8 +474,8 @@ def download_all_features(
                 else "—"
             )
             logger.info(
-                "offset=%d  returned=%d/%d  geometry=%s",
-                offset, returned, total, geometry_type
+                "offset=%d  total_returned=%d/%d  geometry=%s",
+                offset, total_returned, total, geometry_type
             )
 
             offset += page_size
@@ -471,30 +485,44 @@ def download_all_features(
             logger.exception("Error en página offset=%d: %s", offset, e)
             raise
 
-    return geojson
+    return gjson
 
-def save_geojson(geojson: dict, filepath: str) -> None:
+def save_geojson(gjson: dict, filepath: str, name: str) -> None:
     """Guarda el FeatureCollection en disco"""
+    # Comprobar si el directorio del archivo existe, de lo contrario crearlo
+    if not filepath:
+        filepath = f"./"
+
+    directory = os.path.dirname(filepath)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    if filepath.lower().endswith(".geojson") or filepath.lower().endswith(".json"):
+        filepath = filepath
+
+    elif not filepath.endswith("/"):
+        filepath = filepath.rstrip("/") + "/"
+        filepath += f"{name}.geojson"
+    else:
+        filepath += f"{name}.geojson"
+    
     try:
         with open(filepath, "w", encoding="utf-8") as f:
-            json.dump(geojson, f, ensure_ascii=False, indent=2)
-        logger.info("GeoJSON guardado correctamente: %s", filepath)
+            json.dump(gjson, f, ensure_ascii=False, indent=2)
+        logger.info("gjson guardado correctamente: %s", filepath)
     except Exception:
         logger.exception("No se pudo guardar el archivo: %s", filepath)
+    
 
 def descargar_nivel_administrativo(
-    nivel: str,           # "Comunidad autónoma" o "Provincia"
+    nivel: str, 
     path: Optional[str] = None,
-    pag: int = DEFAULT_PAGE_SIZE
+    pag: int = DEFAULT_PAGE_SIZE,
+    name: Optional[str] = None,
 ) -> None:
     """
-    Descarga comunidades autónomas o provincias del IGN y las guarda en GeoJSON
+    Descarga los features de un nivel administrativo y los guarda en disco
     """
-    if path and not path.endswith("/"):
-        path += "/"
-
-    filename = f"{nivel.replace(' ', '')}.GeoJSON"
-    filepath = path + filename if path else filename
 
     logger.info("Iniciando descarga: %s - IGN API-Features", nivel)
 
@@ -505,12 +533,48 @@ def descargar_nivel_administrativo(
     }
 
     try:
-        geojson = download_all_features(session, params, page_size=pag)
-        save_geojson(geojson, filepath)
+        gjson = download_all_features(session, params, page_size=pag)
+        save_geojson(gjson, path,name)
+        return gjson
     except Exception as e:
         logger.error("Fallo general al descargar %s: %s", nivel, e)
     finally:
         logger.info("Proceso finalizado para %s", nivel)
+
+
+def simplify_geojson(geojson_data, simplification_distance, filepath, geojson_name):
+    try:
+        features = geojson.loads(json.dumps(geojson_data))['features']
+        
+        for feature in features:
+            geometry = feature['geometry']
+            coordinates = geometry['coordinates']
+            if geometry['type'] == 'LineString':
+                coordinates_shapely = shapely.geometry.LineString(coordinates)
+            elif geometry['type'] == 'MultiLineString':
+                coordinates_shapely = shapely.geometry.MultiLineString(coordinates)
+            elif geometry['type'] == 'Polygon':
+                coordinates_shapely = shapely.geometry.Polygon(coordinates)
+            elif geometry['type'] == 'MultiPolygon':
+                coordinates_shapely = shapely.geometry.MultiPolygon(coordinates)
+            elif geometry['type'] == 'GeometryCollection':
+                coordinates_shapely = shapely.geometry.GeometryCollection(coordinates)
+            
+            simplified_coordinates = shapely.simplify(coordinates_shapely, tolerance = simplification_distance)
+
+            feature_simpl = geojson.Feature(geometry=simplified_coordinates)
+            feature['geometry'] = feature_simpl['geometry']
+        
+        gjson = {'type': 'FeatureCollection', 'features': features}
+        geojson_name = f"{geojson_name}_simpl"
+        save_geojson(gjson, filepath, geojson_name) 
+        logger.info("Proceso de simplificación completado.")
+        return gjson
+    except Exception as e:
+        logger.error("Error al simplificar el GeoJSON: %s", e)
+        raise ValueError(e)
+
+
 
 
 
@@ -520,4 +584,9 @@ def descargar_nivel_administrativo(
 if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)  # "DEBUG" "INFO", "WARNING", "ERROR"
     # codigos_postales(path="./codigos_postales/", descarga_ID_json=False)
-    eurostat_countries(path="./eurostat_countries/")
+    path=""
+    # geojson_data, geojson_name = eurostat_countries(path=path)
+    geojson_data, geojson_name = IGN_comunidades_autonomas(path=path)
+
+    simpl = 1
+    geojson_simpl = simplify_geojson(geojson_data, simpl, path, geojson_name)

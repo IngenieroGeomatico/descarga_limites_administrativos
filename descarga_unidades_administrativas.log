@@ -1,7 +1,7 @@
-2026-01-12 16:41:27,480 - INFO - Total de objetos encontrados: 263
-2026-01-12 16:41:27,480 - ERROR - No se pudo guardar el archivo: ./eurostat_countries/
-Traceback (most recent call last):
-  File "C:\Users\aragonva\OneDrive - Ayuntamiento de Madrid\personal\github\descarga_limites_administrativos\lib\descarga_unidad_administrativa.py", line 479, in save_geojson
-    with open(filepath, "w", encoding="utf-8") as f:
-         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-OSError: [Errno 22] Invalid argument: './eurostat_countries/'
+2026-01-12 21:34:15,422 - INFO - Iniciando descarga: Comunidad autónoma - IGN API-Features
+2026-01-12 21:34:16,638 - INFO - Total de objetos encontrados: 20
+2026-01-12 21:34:33,214 - INFO - offset=0  total_returned=20/20  geometry=MultiPolygon
+2026-01-12 21:34:45,471 - INFO - gjson guardado correctamente: ./IGN_comunidades_autonomas.geojson
+2026-01-12 21:34:45,471 - INFO - Proceso finalizado para Comunidad autónoma
+2026-01-12 21:34:45,471 - INFO - Proceso completado.
+2026-01-12 21:34:52,372 - ERROR - Error al simplificar el GeoJSON: 'float' object is not iterable
