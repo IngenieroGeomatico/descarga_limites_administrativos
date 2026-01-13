@@ -613,6 +613,8 @@ def simplify_geojson(geojson_data, simplification_distance, filepath, geojson_na
 
         if isinstance(geom, Polygon):
             area = polygon_area_geodesic_m2(geom)
+            print("area: ",area)
+            input()
             if area >= min_area_m2:
                 return geom
             # demasiado pequeño
@@ -665,10 +667,12 @@ def simplify_geojson(geojson_data, simplification_distance, filepath, geojson_na
                 # Solo tratamos Polygon/MultiPolygon. Otros tipos pasan tal cual.
                 if geom["type"] in ("Polygon", "MultiPolygon"):
                     shp = shape(geom)
+
                     shp_filtered = filter_small_polygons(
                         shp, min_area_m2=min_area_m2,
                         keep_largest_if_all_removed=keep_largest_if_all_removed
                     )
+
                     if shp_filtered is None or shp_filtered.is_empty:
                         drop_count += 1
                         continue
@@ -704,5 +708,5 @@ if __name__ == "__main__":
     geojson_data, geojson_name = IGN_comunidades_autonomas(path=path)
 
     simpl = 0.1
-    min_area_m2 = simpl * 10000
+    min_area_m2 = simpl  * 10000000000
     geojson_simpl = simplify_geojson(geojson_data, simpl, path, geojson_name,min_area_m2)
