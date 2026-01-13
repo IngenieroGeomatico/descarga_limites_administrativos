@@ -9,6 +9,7 @@ import logging
 import topojson
 import requests
 import shapefile
+import geopandas as gpd
 from typing import Optional
 from pyproj import CRS, Transformer
 
@@ -546,7 +547,7 @@ def descargar_nivel_administrativo(
         logger.info("Proceso finalizado para %s", nivel)
 
 
-def simplify_geojson_(geojson_data, simplification_distance, filepath, geojson_name):
+def simplify_geojson_1(geojson_data, simplification_distance, filepath, geojson_name):
     try:
         # 1️⃣ Convertir GeoJSON a TopoJSON
         logger.info("Convirtiendo GeoJSON a TopoJSON...")
@@ -571,7 +572,7 @@ def simplify_geojson_(geojson_data, simplification_distance, filepath, geojson_n
         raise ValueError(e)
 
 
-def simplify_geojson(geojson_data, simplification_distance, filepath, geojson_name,
+def simplify_geojson_2(geojson_data, simplification_distance, filepath, geojson_name,
                      min_area_m2=None, keep_largest_if_all_removed=True):
     """
     min_area_m2: si se especifica, elimina minipolígonos con área < min_area_m2 (en m²).
@@ -715,6 +716,116 @@ def simplify_geojson(geojson_data, simplification_distance, filepath, geojson_na
         raise ValueError(e)
 
 
+def simplify_geojson(
+    geojson_data,
+    simplification_tolerance,           # ← ahora en grados (típico 0.0001 - 0.005)
+    filepath,
+    geojson_name,
+    min_area_m2=None,
+    keep_largest_if_all_removed=True,
+    simplify_boundary=True             # nuevo: si simplificar también el contorno exterior
+):
+    """
+    Simplificación topológica usando geopandas.simplify_coverage
+    (consume mucha menos memoria que topojson)
+    
+    Parámetros importantes:
+    - simplification_tolerance: valor en grados (ej: 0.0005 ≈ buena simplificación media)
+    - min_area_m2: opcional, filtra polígonos pequeños después de simplificar
+    """
+
+    _GEOD = Geod(ellps="WGS84")
+
+    def _ring_area_m2(coords):
+        """Área geodésica de un anillo en m² (valor absoluto)"""
+        lons, lats = zip(*coords)
+        area, _ = _GEOD.polygon_area_perimeter(lons, lats)
+        return abs(area)
+
+    def polygon_area_geodesic_m2(poly):
+        """Área de Polygon en m² considerando agujeros"""
+        area_ext = _ring_area_m2(list(poly.exterior.coords))
+        holes_area = sum(_ring_area_m2(list(ring.coords)) for ring in poly.interiors)
+        return max(0.0, area_ext - holes_area)
+
+    def filter_small_polygons(geom, min_area_m2=None, keep_largest_if_all_removed=True):
+        """
+        Elimina polígonos con área < min_area_m2 (en m²).
+        Versión simplificada para GeoDataFrame.
+        """
+        if min_area_m2 is None:
+            return geom
+        
+        if geom.is_empty:
+            return None
+            
+        area = polygon_area_geodesic_m2(geom) if hasattr(geom, 'exterior') else 0
+        
+        if area >= min_area_m2:
+            return geom
+        
+        # Si es muy pequeño
+        return geom if keep_largest_if_all_removed else None
+
+    try:
+        logger.info("Leyendo GeoJSON y convirtiendo a GeoDataFrame...")
+        gdf = gpd.GeoDataFrame.from_features(geojson_data["features"], crs="EPSG:4326")
+        
+        if len(gdf) == 0:
+            logger.warning("GeoDataFrame vacío")
+            return geojson_data
+            
+        logger.info(f"Features originales: {len(gdf)}")
+        
+        # 1. Simplificación topológica preservando cobertura
+        logger.info(f"Simplificando con tolerance = {simplification_tolerance}° "
+                   f"(simplify_coverage - boundary: {simplify_boundary})...")
+        
+        # El método clave aquí ↓
+        gdf["geometry"] = gdf.geometry.simplify_coverage(
+            tolerance=simplification_tolerance,
+            simplify_boundary=simplify_boundary,   # False = solo bordes internos compartidos
+            # algorithm es Visvalingam-Whyatt por defecto (el más adecuado)
+        )
+        
+        # 2. Limpiar geometrías que puedan haberse invalidado (poco frecuente)
+        logger.info("Arreglando posibles geometrías inválidas...")
+        gdf["geometry"] = gdf.geometry.make_valid()
+        
+        # 3. Filtrar polígonos pequeños por área real (geodésica)
+        if min_area_m2 is not None:
+            logger.info(f"Filtrando polígonos < {min_area_m2:.1f} m²...")
+            
+            mask = gdf.geometry.apply(
+                lambda g: filter_small_polygons(
+                    g,
+                    min_area_m2=min_area_m2,
+                    keep_largest_if_all_removed=keep_largest_if_all_removed
+                ) is not None
+            )
+            
+            dropped = len(gdf) - mask.sum()
+            gdf = gdf[mask].copy()
+            logger.info(f"Polígonos descartados por área: {dropped}")
+        
+        # 4. Convertir de vuelta a GeoJSON
+        simplified_geojson = {
+            "type": "FeatureCollection",
+            "features": json.loads(gdf.to_json())["features"]
+        }
+        
+        # 5. Guardar
+        out_name = f"{geojson_name}_simpl"
+        # tu función save_geojson supongo que existe
+        save_geojson(simplified_geojson, filepath, out_name)
+        
+        logger.info(f"Proceso completado. Features finales: {len(gdf)}")
+        return simplified_geojson
+        
+    except Exception as e:
+        logger.error("Error al simplificar con GeoPandas: %s", str(e), exc_info=True)
+        raise
+
 # =========================
 # Main
 # =========================
@@ -727,4 +838,12 @@ if __name__ == "__main__":
 
     simpl = 0.1
     min_area_m2 = simpl  * 10000000000
-    geojson_simpl = simplify_geojson(geojson_data, simpl, path, geojson_name,min_area_m2)
+
+    geojson_simpl = simplify_geojson(
+        geojson_data=geojson_data,
+        simplification_tolerance=simpl,
+        filepath=path,
+        geojson_name=geojson_name,
+        min_area_m2=min_area_m2,
+        simplify_boundary=True
+    )

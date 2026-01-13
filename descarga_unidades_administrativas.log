@@ -1,8 +1,14 @@
-2026-01-13 18:44:17,699 - INFO - Iniciando descarga: Comunidad autónoma - IGN API-Features
-2026-01-13 18:44:19,699 - INFO - Total de objetos encontrados: 20
-2026-01-13 18:44:35,952 - INFO - offset=0  total_returned=20/20  geometry=MultiPolygon
-2026-01-13 18:44:49,313 - INFO - gjson guardado correctamente: ./IGN_comunidades_autonomas.geojson
-2026-01-13 18:44:49,313 - INFO - Proceso finalizado para Comunidad autónoma
-2026-01-13 18:44:49,317 - INFO - Proceso completado.
-2026-01-13 18:44:49,317 - INFO - Convirtiendo GeoJSON a TopoJSON...
-2026-01-13 18:45:05,916 - INFO - Simplificando con tolerancia 0.1...
+2026-01-13 20:46:18,913 - INFO - Iniciando descarga: Comunidad autónoma - IGN API-Features
+2026-01-13 20:46:20,453 - INFO - Total de objetos encontrados: 20
+2026-01-13 20:46:36,812 - INFO - offset=0  total_returned=20/20  geometry=MultiPolygon
+2026-01-13 20:46:46,754 - INFO - gjson guardado correctamente: ./IGN_comunidades_autonomas.geojson
+2026-01-13 20:46:46,754 - INFO - Proceso finalizado para Comunidad autónoma
+2026-01-13 20:46:46,755 - INFO - Proceso completado.
+2026-01-13 20:46:46,755 - INFO - Leyendo GeoJSON y convirtiendo a GeoDataFrame...
+2026-01-13 20:46:47,979 - INFO - Features originales: 20
+2026-01-13 20:46:47,979 - INFO - Simplificando con tolerance = 0.1° (simplify_coverage - boundary: True)...
+2026-01-13 20:46:51,897 - INFO - Arreglando posibles geometrías inválidas...
+2026-01-13 20:46:51,914 - INFO - Filtrando polígonos < 1000000000.0 m²...
+2026-01-13 20:46:51,916 - INFO - Polígonos descartados por área: 0
+2026-01-13 20:46:52,335 - INFO - gjson guardado correctamente: ./IGN_comunidades_autonomas_simpl.geojson
+2026-01-13 20:46:52,336 - INFO - Proceso completado. Features finales: 20
