@@ -597,6 +597,19 @@ def simplify_geojson(geojson_data, simplification_distance, filepath, geojson_na
         # Agujeros
         holes_area = sum(_ring_area_m2(list(ring.coords)) for ring in poly.interiors)
         return max(0.0, area_ext - holes_area)
+    
+    def fix_invalid_polygon(polygon: Polygon) -> Polygon:
+        # Ajustar la geometría para hacerla válida
+        fixed_polygon = polygon.buffer(0)
+        return fixed_polygon
+    
+    def fix_invalid_multipolygon(multipolygon: MultiPolygon) -> MultiPolygon:
+        fixed_multipolygon = []
+        for polygon in multipolygon:
+            fixed_polygon = polygon.buffer(0)
+            fixed_multipolygon.append(fixed_polygon)
+        return MultiPolygon(fixed_multipolygon)
+
 
     def filter_small_polygons(geom: BaseGeometry, min_area_m2: float,
                             keep_largest_if_all_removed: bool = True) -> BaseGeometry | None:
@@ -613,30 +626,35 @@ def simplify_geojson(geojson_data, simplification_distance, filepath, geojson_na
 
         if isinstance(geom, Polygon):
             area = polygon_area_geodesic_m2(geom)
-            print("area: ",area)
-            input()
             if area >= min_area_m2:
+                # Verificar si la geometría es válida
+                if not geom.is_valid:
+                    logger.warning("La geometría no es válida: %s", geom)
+                    fixed_polygon = fix_invalid_polygon(geom)
+                    return fixed_polygon
                 return geom
             # demasiado pequeño
             return geom if keep_largest_if_all_removed else None
 
+
         if isinstance(geom, MultiPolygon):
-            polys = list(geom.geoms)
-            areas = [polygon_area_geodesic_m2(p) for p in polys]
-            kept = [p for p, a in zip(polys, areas) if a >= min_area_m2]
+            total_area = 0
+            fixed_multipolygon = []
+            for polygon in geom:
+                area = polygon_area_geodesic_m2(polygon)
+                if area >= min_area_m2:
+                    if not polygon.is_valid:
+                        logger.warning("La geometría no es válida: %s", polygon)
+                        fixed_polygon = fix_invalid_polygon([polygon])
+                        fixed_multipolygon.append(fixed_polygon[0])
+                    else:
+                        fixed_multipolygon.append(polygon)
+                    total_area += area
+            if total_area >= min_area_m2:
+                return MultiPolygon(fixed_multipolygon)
+            # demasiado pequeño
+            return geom if keep_largest_if_all_removed else None
 
-            if kept:
-                if len(kept) == 1:
-                    return kept[0]
-                return MultiPolygon(kept)
-
-            # Nada cumple el umbral
-            if keep_largest_if_all_removed and len(polys) > 0:
-                # Mantener el mayor (evita vaciar la entidad por completo)
-                idx = max(range(len(polys)), key=lambda i: areas[i])
-                return polys[idx]
-
-            return None
 
         # Si no es Polygon/MultiPolygon, devolvemos tal cual (o None si no quieres puntos/líneas)
         return geom
