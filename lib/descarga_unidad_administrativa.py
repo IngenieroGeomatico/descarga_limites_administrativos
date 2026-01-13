@@ -4,18 +4,19 @@ import os
 import sys
 import time
 import json
-import shapely
-import geojson
 import zipfile
 import logging
+import topojson
 import requests
 import shapefile
 from typing import Optional
 from pyproj import CRS, Transformer
-from shapely.geometry import mapping,shape 
-from shapely.geometry import shape, mapping
-from shapely.validation import explain_validity
-from logging.handlers import RotatingFileHandler
+
+
+from shapely.geometry import shape, mapping, Polygon, MultiPolygon
+from shapely.geometry.base import BaseGeometry
+from pyproj import Geod
+
 
 
 
@@ -545,48 +546,151 @@ def descargar_nivel_administrativo(
         logger.info("Proceso finalizado para %s", nivel)
 
 
-def simplify_geojson(geojson_data, simplification_distance, filepath, geojson_name):
+def simplify_geojson_(geojson_data, simplification_distance, filepath, geojson_name):
     try:
-        # Convertimos el GeoJSON en dict y extraemos las features
-        features = geojson.loads(json.dumps(geojson_data))['features']
+        # 1️⃣ Convertir GeoJSON a TopoJSON
+        logger.info("Convirtiendo GeoJSON a TopoJSON...")
+        topology = topojson.Topology(geojson_data, prequantize=1e6)  # prequantize mejora la compresión
 
-        for feature in features:
-            geom_dict = feature['geometry']
+        # 2️⃣ Simplificar topológicamente
+        logger.info(f"Simplificando con tolerancia {simplification_distance}...")
+        topology = topology.toposimplify(simplification_distance)
 
-            # Convertir la geometría GeoJSON a objeto Shapely
-            try:
-                geom = shape(geom_dict)
-            except Exception as e:
-                print(f"Error al convertir geometría {geom_dict.get('type')}: {e}")
-                continue
-
-            # Validar y reparar geometrías inválidas
-            if not geom.is_valid:
-                print(f"Geometría inválida: {explain_validity(geom)}")
-                if hasattr(shapely, "make_valid"):
-                    geom = shapely.make_valid(geom)
-                else:
-                    geom = geom.buffer(0)
-
-            # Simplificar (preservando topología para polígonos)
-            simplified_geom = geom.simplify(simplification_distance, preserve_topology=True)
-
-            # Actualizar la geometría en el feature
-            feature['geometry'] = mapping(simplified_geom)
-
-        # Crear el nuevo GeoJSON simplificado
-        gjson = {'type': 'FeatureCollection', 'features': features}
+        # 3️⃣ Convertir de nuevo a GeoJSON
+        simplified_geojson = json.loads(topology.to_geojson())
+        
+        # 4️⃣ Guardar el resultado
         geojson_name = f"{geojson_name}_simpl"
-        save_geojson(gjson, filepath, geojson_name)
+        save_geojson(simplified_geojson, filepath, geojson_name)
 
-        logger.info("Proceso de simplificación completado.")
-        return gjson
+        logger.info("Proceso completado con TopoJSON (simplificación topológica).")
+        return simplified_geojson
 
     except Exception as e:
-        logger.error("Error al simplificar el GeoJSON: %s", e)
+        logger.error("Error al simplificar el GeoJSON con TopoJSON: %s", e)
         raise ValueError(e)
 
 
+def simplify_geojson(geojson_data, simplification_distance, filepath, geojson_name,
+                     min_area_m2=None, keep_largest_if_all_removed=True):
+    """
+    min_area_m2: si se especifica, elimina minipolígonos con área < min_area_m2 (en m²).
+    """
+
+    _GEOD = Geod(ellps="WGS84")
+
+    def _ring_area_m2(coords):
+        """
+        Área geodésica de un anillo (lista de [lon, lat]) en m².
+        Devuelve valor positivo para el exterior si está CCW, negativo si CW (convención geod).
+        """
+        lons, lats = zip(*coords)
+        area, _ = _GEOD.polygon_area_perimeter(lons, lats)
+        return abs(area)  # nos interesa área absoluta
+
+    def polygon_area_geodesic_m2(poly: Polygon) -> float:
+        """
+        Área de un shapely Polygon en m² sobre WGS84, teniendo en cuenta agujeros.
+        """
+        # Exterior
+        area_ext = _ring_area_m2(list(poly.exterior.coords))
+        # Agujeros
+        holes_area = sum(_ring_area_m2(list(ring.coords)) for ring in poly.interiors)
+        return max(0.0, area_ext - holes_area)
+
+    def filter_small_polygons(geom: BaseGeometry, min_area_m2: float,
+                            keep_largest_if_all_removed: bool = True) -> BaseGeometry | None:
+        """
+        Elimina componentes (polígonos) con área < min_area_m2 dentro de Polygon/MultiPolygon.
+        - Si es Polygon y es < umbral → devuelve None (o el mismo si keep_largest_if_all_removed=True y no hay nada más).
+        - Si es MultiPolygon, devuelve un MultiPolygon con solo los polígonos ≥ umbral.
+        - Si todos son eliminados y keep_largest_if_all_removed=True → conserva el mayor.
+        - Si tras filtrar queda 1 polígono → devuelve Polygon (no Multi).
+        - Si queda vacío → None.
+        """
+        if geom.is_empty:
+            return None
+
+        if isinstance(geom, Polygon):
+            area = polygon_area_geodesic_m2(geom)
+            if area >= min_area_m2:
+                return geom
+            # demasiado pequeño
+            return geom if keep_largest_if_all_removed else None
+
+        if isinstance(geom, MultiPolygon):
+            polys = list(geom.geoms)
+            areas = [polygon_area_geodesic_m2(p) for p in polys]
+            kept = [p for p, a in zip(polys, areas) if a >= min_area_m2]
+
+            if kept:
+                if len(kept) == 1:
+                    return kept[0]
+                return MultiPolygon(kept)
+
+            # Nada cumple el umbral
+            if keep_largest_if_all_removed and len(polys) > 0:
+                # Mantener el mayor (evita vaciar la entidad por completo)
+                idx = max(range(len(polys)), key=lambda i: areas[i])
+                return polys[idx]
+
+            return None
+
+        # Si no es Polygon/MultiPolygon, devolvemos tal cual (o None si no quieres puntos/líneas)
+        return geom
+
+    try:
+        # 1️⃣ Convertir a TopoJSON
+        logger.info("Convirtiendo GeoJSON a TopoJSON...")
+        topology = topojson.Topology(geojson_data, prequantize=1e6)
+
+        # 2️⃣ Simplificar topológicamente
+        logger.info(f"Simplificando con tolerancia {simplification_distance}...")
+        topology = topology.toposimplify(simplification_distance)
+
+        # 3️⃣ Volver a GeoJSON
+        simplified_geojson = json.loads(topology.to_geojson())
+
+        # 3b️⃣ (Opcional) Filtrar minipolígonos por área
+        if min_area_m2 is not None:
+            logger.info(f"Filtrando polígonos con área < {min_area_m2:.2f} m²...")
+            filtered_features = []
+            drop_count = 0
+
+            for feat in simplified_geojson.get("features", []):
+                geom = feat.get("geometry")
+                if not geom:
+                    continue
+
+                # Solo tratamos Polygon/MultiPolygon. Otros tipos pasan tal cual.
+                if geom["type"] in ("Polygon", "MultiPolygon"):
+                    shp = shape(geom)
+                    shp_filtered = filter_small_polygons(
+                        shp, min_area_m2=min_area_m2,
+                        keep_largest_if_all_removed=keep_largest_if_all_removed
+                    )
+                    if shp_filtered is None or shp_filtered.is_empty:
+                        drop_count += 1
+                        continue
+                    # Actualizamos geometría filtrada
+                    feat = {**feat, "geometry": mapping(shp_filtered)}
+                    filtered_features.append(feat)
+                else:
+                    filtered_features.append(feat)
+
+            simplified_geojson["features"] = filtered_features
+            logger.info(f"Filtrado completado. Features descartadas: {drop_count}")
+
+        # 4️⃣ Guardar
+        out_name = f"{geojson_name}_simpl"
+        save_geojson(simplified_geojson, filepath, out_name)
+
+        logger.info("Proceso completado con TopoJSON + filtrado por área.")
+        return simplified_geojson
+
+    except Exception as e:
+        logger.error("Error al simplificar el GeoJSON con TopoJSON: %s", e)
+        raise ValueError(e)
 
 
 # =========================
@@ -599,5 +703,6 @@ if __name__ == "__main__":
     # geojson_data, geojson_name = eurostat_countries(path=path)
     geojson_data, geojson_name = IGN_comunidades_autonomas(path=path)
 
-    simpl = 1
-    geojson_simpl = simplify_geojson(geojson_data, simpl, path, geojson_name)
+    simpl = 0.1
+    min_area_m2 = simpl * 10000
+    geojson_simpl = simplify_geojson(geojson_data, simpl, path, geojson_name,min_area_m2)
