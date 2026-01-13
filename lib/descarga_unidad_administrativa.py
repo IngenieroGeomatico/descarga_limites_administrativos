@@ -12,8 +12,11 @@ import requests
 import shapefile
 from typing import Optional
 from pyproj import CRS, Transformer
-from shapely.geometry import mapping
+from shapely.geometry import mapping,shape 
+from shapely.geometry import shape, mapping
+from shapely.validation import explain_validity
 from logging.handlers import RotatingFileHandler
+
 
 
 
@@ -512,7 +515,7 @@ def save_geojson(gjson: dict, filepath: str, name: str) -> None:
         logger.info("gjson guardado correctamente: %s", filepath)
     except Exception:
         logger.exception("No se pudo guardar el archivo: %s", filepath)
-    
+
 
 def descargar_nivel_administrativo(
     nivel: str, 
@@ -544,36 +547,44 @@ def descargar_nivel_administrativo(
 
 def simplify_geojson(geojson_data, simplification_distance, filepath, geojson_name):
     try:
+        # Convertimos el GeoJSON en dict y extraemos las features
         features = geojson.loads(json.dumps(geojson_data))['features']
-        
-        for feature in features:
-            geometry = feature['geometry']
-            coordinates = geometry['coordinates']
-            if geometry['type'] == 'LineString':
-                coordinates_shapely = shapely.geometry.LineString(coordinates)
-            elif geometry['type'] == 'MultiLineString':
-                coordinates_shapely = shapely.geometry.MultiLineString(coordinates)
-            elif geometry['type'] == 'Polygon':
-                coordinates_shapely = shapely.geometry.Polygon(coordinates)
-            elif geometry['type'] == 'MultiPolygon':
-                coordinates_shapely = shapely.geometry.MultiPolygon(coordinates)
-            elif geometry['type'] == 'GeometryCollection':
-                coordinates_shapely = shapely.geometry.GeometryCollection(coordinates)
-            
-            simplified_coordinates = shapely.simplify(coordinates_shapely, tolerance = simplification_distance)
 
-            feature_simpl = geojson.Feature(geometry=simplified_coordinates)
-            feature['geometry'] = feature_simpl['geometry']
-        
+        for feature in features:
+            geom_dict = feature['geometry']
+
+            # Convertir la geometría GeoJSON a objeto Shapely
+            try:
+                geom = shape(geom_dict)
+            except Exception as e:
+                print(f"Error al convertir geometría {geom_dict.get('type')}: {e}")
+                continue
+
+            # Validar y reparar geometrías inválidas
+            if not geom.is_valid:
+                print(f"Geometría inválida: {explain_validity(geom)}")
+                if hasattr(shapely, "make_valid"):
+                    geom = shapely.make_valid(geom)
+                else:
+                    geom = geom.buffer(0)
+
+            # Simplificar (preservando topología para polígonos)
+            simplified_geom = geom.simplify(simplification_distance, preserve_topology=True)
+
+            # Actualizar la geometría en el feature
+            feature['geometry'] = mapping(simplified_geom)
+
+        # Crear el nuevo GeoJSON simplificado
         gjson = {'type': 'FeatureCollection', 'features': features}
         geojson_name = f"{geojson_name}_simpl"
-        save_geojson(gjson, filepath, geojson_name) 
+        save_geojson(gjson, filepath, geojson_name)
+
         logger.info("Proceso de simplificación completado.")
         return gjson
+
     except Exception as e:
         logger.error("Error al simplificar el GeoJSON: %s", e)
         raise ValueError(e)
-
 
 
 
