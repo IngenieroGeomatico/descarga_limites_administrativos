@@ -1,16 +1,19 @@
-2026-01-14 12:43:46,747 - INFO - Iniciando descarga: Comunidad autónoma - IGN API-Features
-2026-01-14 12:43:48,910 - INFO - Total de objetos encontrados: 20
-2026-01-14 12:44:05,348 - INFO - offset=0  total_returned=20/20  geometry=MultiPolygon
-2026-01-14 12:44:11,898 - INFO - gjson guardado correctamente: ./IGN_comunidades_autonomas.geojson
-2026-01-14 12:44:11,898 - INFO - Proceso finalizado para Comunidad autónoma
-2026-01-14 12:44:11,899 - INFO - Proceso completado.
-2026-01-14 12:44:11,899 - INFO - Leyendo GeoJSON y convirtiendo a GeoDataFrame...
-2026-01-14 12:44:12,324 - INFO - Features originales: 20
-2026-01-14 12:44:12,324 - INFO - Simplificando con tolerance = 0.100000° (simplify_coverage - boundary: True)...
-2026-01-14 12:44:16,354 - INFO - Arreglando posibles geometrías inválidas...
-2026-01-14 12:44:16,379 - INFO - Eliminando agujeros < 10000000000000000761796201807872.0 m² y partes pequeñas en MultiPolygon...
-2026-01-14 12:44:16,723 - INFO - Agujeros eliminados (total): 10
-2026-01-14 12:44:16,723 - INFO - Geometrías internas eliminadas en MultiPolygon (total): 5181
-2026-01-14 12:44:16,723 - INFO - Features eliminados completamente por área: 0 (drop efectivo: 0)
-2026-01-14 12:44:16,732 - INFO - gjson guardado correctamente: ./IGN_comunidades_autonomas_simpl.geojson
-2026-01-14 12:44:16,732 - INFO - Proceso completado. Features finales: 20
+2026-01-14 20:00:37,001 - INFO - Iniciando descarga: Provincia - IGN API-Features
+2026-01-14 20:00:37,282 - INFO - Total de objetos encontrados: 53
+2026-01-14 20:00:45,841 - INFO - offset=0  total_returned=20/53  geometry=MultiPolygon
+2026-01-14 20:00:59,473 - INFO - offset=20  total_returned=40/53  geometry=MultiPolygon
+2026-01-14 20:01:04,445 - INFO - offset=40  total_returned=53/53  geometry=MultiPolygon
+2026-01-14 20:01:13,438 - INFO - gjson guardado correctamente: ./IGN_provincias.geojson
+2026-01-14 20:01:13,438 - INFO - Proceso finalizado para Provincia
+2026-01-14 20:01:13,439 - INFO - Proceso completado.
+2026-01-14 20:01:13,439 - INFO - Leyendo GeoJSON...
+2026-01-14 20:01:14,746 - INFO - Features originales: 53
+2026-01-14 20:01:14,746 - INFO - Limpieza inicial 
+2026-01-14 20:01:15,483 - INFO - Simplificando tolerance = 0.010000°
+2026-01-14 20:01:19,256 - INFO - Limpieza post-simplificación...
+2026-01-14 20:01:19,580 - INFO - gjson guardado correctamente: ./IGN_provincias_simpl.geojson
+2026-01-14 20:01:19,580 - INFO - Proceso completado:
+  Agujeros eliminados:     14
+  Partes eliminadas:       5,150
+  Features eliminados:     0
+  Features finales:        53
