@@ -742,6 +742,27 @@ def simplify_geojson(
         area, _ = _GEOD.polygon_area_perimeter(lons, lats)
         return abs(area)
 
+    def remove_small_holes(geom, min_area_m2):
+        """
+        Elimina agujeros (interior rings) con área < min_area_m2.
+        """
+        if geom.is_empty or not hasattr(geom, "interiors"):
+            return geom
+
+        # Si no hay agujeros, devolver tal cual
+        if len(geom.interiors) == 0:
+            return geom
+
+        # Filtrar agujeros grandes
+        new_interiors = []
+        for ring in geom.interiors:
+            hole_area = _ring_area_m2(list(ring.coords))
+            if hole_area >= min_area_m2:
+                new_interiors.append(ring)
+
+        # Crear nuevo polígono con los agujeros filtrados
+        return Polygon(geom.exterior, new_interiors)
+
     def polygon_area_geodesic_m2(poly):
         """Área de Polygon en m² considerando agujeros"""
         area_ext = _ring_area_m2(list(poly.exterior.coords))
@@ -781,7 +802,6 @@ def simplify_geojson(
         logger.info(f"Simplificando con tolerance = {simplification_tolerance}° "
                    f"(simplify_coverage - boundary: {simplify_boundary})...")
         
-        # El método clave aquí ↓
         gdf["geometry"] = gdf.geometry.simplify_coverage(
             tolerance=simplification_tolerance,
             simplify_boundary=simplify_boundary,   # False = solo bordes internos compartidos
@@ -794,6 +814,11 @@ def simplify_geojson(
         
         # 3. Filtrar polígonos pequeños por área real (geodésica)
         if min_area_m2 is not None:
+            
+            logger.info(f"Eliminando agujeros < {min_area_m2:.1f} m²...")
+            gdf["geometry"] = gdf.geometry.apply(lambda g: remove_small_holes(g, min_area_m2))
+
+
             logger.info(f"Filtrando polígonos < {min_area_m2:.1f} m²...")
             
             mask = gdf.geometry.apply(
@@ -804,6 +829,7 @@ def simplify_geojson(
                 ) is not None
             )
             
+            gdf["geometry"] = gdf.geometry.make_valid()
             dropped = len(gdf) - mask.sum()
             gdf = gdf[mask].copy()
             logger.info(f"Polígonos descartados por área: {dropped}")
@@ -825,6 +851,8 @@ def simplify_geojson(
     except Exception as e:
         logger.error("Error al simplificar con GeoPandas: %s", str(e), exc_info=True)
         raise
+
+
 
 # =========================
 # Main
