@@ -734,120 +734,181 @@ def simplify_geojson(
     - min_area_m2: opcional, filtra polígonos pequeños después de simplificar
     """
 
+    
     _GEOD = Geod(ellps="WGS84")
 
+    # --- Utilidades de área geodésica ---
     def _ring_area_m2(coords):
         """Área geodésica de un anillo en m² (valor absoluto)"""
         lons, lats = zip(*coords)
         area, _ = _GEOD.polygon_area_perimeter(lons, lats)
         return abs(area)
 
-    def remove_small_holes(geom, min_area_m2):
-        """
-        Elimina agujeros (interior rings) con área < min_area_m2.
-        """
-        if geom.is_empty or not hasattr(geom, "interiors"):
-            return geom
-
-        # Si no hay agujeros, devolver tal cual
-        if len(geom.interiors) == 0:
-            return geom
-
-        # Filtrar agujeros grandes
-        new_interiors = []
-        for ring in geom.interiors:
-            hole_area = _ring_area_m2(list(ring.coords))
-            if hole_area >= min_area_m2:
-                new_interiors.append(ring)
-
-        # Crear nuevo polígono con los agujeros filtrados
-        return Polygon(geom.exterior, new_interiors)
-
-    def polygon_area_geodesic_m2(poly):
+    def polygon_area_geodesic_m2(poly: Polygon) -> float:
         """Área de Polygon en m² considerando agujeros"""
         area_ext = _ring_area_m2(list(poly.exterior.coords))
         holes_area = sum(_ring_area_m2(list(ring.coords)) for ring in poly.interiors)
         return max(0.0, area_ext - holes_area)
 
-    def filter_small_polygons(geom, min_area_m2=None, keep_largest_if_all_removed=True):
+    # --- Eliminación de agujeros con conteo ---
+    def _remove_small_holes_polygon(poly: Polygon, min_area_m2: float):
+        """Devuelve (nuevo_polígono, agujeros_eliminados) para un Polygon."""
+        if poly.is_empty or len(poly.interiors) == 0:
+            return poly, 0
+
+        kept_interiors = []
+        removed = 0
+        for ring in poly.interiors:
+            hole_area = _ring_area_m2(list(ring.coords))
+            if hole_area >= min_area_m2:
+                kept_interiors.append(list(ring.coords))
+            else:
+                removed += 1
+
+        if removed == 0:
+            return poly, 0
+
+        # Recrear polígono sin los agujeros pequeños
+        return Polygon(poly.exterior, kept_interiors), removed
+
+    def remove_small_holes_with_count(geom: BaseGeometry, min_area_m2: float):
+        """Devuelve (nueva_geom, holes_removed_total) para Polygon/MultiPolygon."""
+        if geom is None or geom.is_empty:
+            return geom, 0
+
+        if isinstance(geom, Polygon):
+            return _remove_small_holes_polygon(geom, min_area_m2)
+
+        if isinstance(geom, MultiPolygon):
+            new_parts = []
+            total_removed = 0
+            for part in geom.geoms:
+                new_part, removed = _remove_small_holes_polygon(part, min_area_m2)
+                new_parts.append(new_part)
+                total_removed += removed
+            return MultiPolygon(new_parts), total_removed
+
+        # Otros tipos (LineString, Point, etc.): no tienen agujeros
+        return geom, 0
+
+    # --- Eliminación de partes pequeñas en MultiPolygon (y features) con conteo ---
+    def remove_small_parts_with_count(
+        geom: BaseGeometry,
+        min_area_m2: float,
+        keep_largest_if_all_removed: bool
+    ):
         """
-        Elimina polígonos con área < min_area_m2 (en m²).
-        Versión simplificada para GeoDataFrame.
+        Elimina partes pequeñas dentro de MultiPolygon.
+        Para Polygon:
+        - Si el área < umbral y keep_largest_if_all_removed == True -> se conserva
+        - Si el área < umbral y keep_largest_if_all_removed == False -> devuelve None (feature eliminado)
+        Devuelve (nueva_geom_o_None, parts_removed_count, feature_removed_flag)
         """
-        if min_area_m2 is None:
-            return geom
-        
-        if geom.is_empty:
-            return None
-            
-        area = polygon_area_geodesic_m2(geom) if hasattr(geom, 'exterior') else 0
-        
-        if area >= min_area_m2:
-            return geom
-        
-        # Si es muy pequeño
-        return geom if keep_largest_if_all_removed else None
+        if geom is None or geom.is_empty:
+            return geom, 0, False
+
+        if isinstance(geom, Polygon):
+            area = polygon_area_geodesic_m2(geom)
+            if area < min_area_m2:
+                # Mantener o eliminar el feature según flag
+                if keep_largest_if_all_removed:
+                    return geom, 0, False   # se conserva tal cual
+                else:
+                    return None, 0, True    # se elimina el feature completo
+            return geom, 0, False
+
+        if isinstance(geom, MultiPolygon):
+            kept = [p for p in geom.geoms if polygon_area_geodesic_m2(p) >= min_area_m2]
+            removed_count = len(geom.geoms) - len(kept)
+
+            if len(kept) == 0:
+                if keep_largest_if_all_removed:
+                    # Conservar solo la parte mayor
+                    largest = max(geom.geoms, key=polygon_area_geodesic_m2)
+                    # Aseguramos que devolvemos un Polygon (no MultiPolygon de 1)
+                    largest_poly = Polygon(largest.exterior, [list(r.coords) for r in largest.interiors])
+                    return largest_poly, removed_count, False
+                else:
+                    return None, removed_count, True
+
+            # Si queda 1 → Polygon; si >1 → MultiPolygon
+            if len(kept) == 1:
+                return kept[0], removed_count, False
+            return MultiPolygon(kept), removed_count, False
+
+        # Otros tipos se devuelven sin cambios
+        return geom, 0, False
 
     try:
         logger.info("Leyendo GeoJSON y convirtiendo a GeoDataFrame...")
         gdf = gpd.GeoDataFrame.from_features(geojson_data["features"], crs="EPSG:4326")
-        
+
         if len(gdf) == 0:
             logger.warning("GeoDataFrame vacío")
             return geojson_data
-            
+
         logger.info(f"Features originales: {len(gdf)}")
-        
-        # 1. Simplificación topológica preservando cobertura
-        logger.info(f"Simplificando con tolerance = {simplification_tolerance}° "
-                   f"(simplify_coverage - boundary: {simplify_boundary})...")
-        
+
+        # 1) Simplificación topológica preservando cobertura
+        logger.info(
+            "Simplificando con tolerance = %.6f° (simplify_coverage - boundary: %s)...",
+            simplification_tolerance, simplify_boundary
+        )
         gdf["geometry"] = gdf.geometry.simplify_coverage(
             tolerance=simplification_tolerance,
-            simplify_boundary=simplify_boundary,   # False = solo bordes internos compartidos
-            # algorithm es Visvalingam-Whyatt por defecto (el más adecuado)
+            simplify_boundary=simplify_boundary,
         )
-        
-        # 2. Limpiar geometrías que puedan haberse invalidado (poco frecuente)
+
+        # 2) Arreglar posibles geometrías inválidas
         logger.info("Arreglando posibles geometrías inválidas...")
         gdf["geometry"] = gdf.geometry.make_valid()
-        
-        # 3. Filtrar polígonos pequeños por área real (geodésica)
+
+        # 3) (Opcional) Filtrado de agujeros y de partes pequeñas con conteo
+        stats = {"holes_removed": 0, "parts_removed": 0, "features_removed": 0}
+
         if min_area_m2 is not None:
-            
-            logger.info(f"Eliminando agujeros < {min_area_m2:.1f} m²...")
-            gdf["geometry"] = gdf.geometry.apply(lambda g: remove_small_holes(g, min_area_m2))
+            logger.info("Eliminando agujeros < %.1f m² y partes pequeñas en MultiPolygon...", min_area_m2)
 
+            def _process_geometry(g):
+                # Quitar agujeros pequeños y acumular conteo
+                g2, holes_removed = remove_small_holes_with_count(g, min_area_m2)
+                stats["holes_removed"] += holes_removed
 
-            logger.info(f"Filtrando polígonos < {min_area_m2:.1f} m²...")
-            
-            mask = gdf.geometry.apply(
-                lambda g: filter_small_polygons(
-                    g,
-                    min_area_m2=min_area_m2,
-                    keep_largest_if_all_removed=keep_largest_if_all_removed
-                ) is not None
-            )
-            
-            gdf["geometry"] = gdf.geometry.make_valid()
-            dropped = len(gdf) - mask.sum()
-            gdf = gdf[mask].copy()
-            logger.info(f"Polígonos descartados por área: {dropped}")
-        
-        # 4. Convertir de vuelta a GeoJSON
+                # Quitar partes pequeñas en MultiPolygon / eliminar feature si procede
+                g3, parts_removed, feature_removed = remove_small_parts_with_count(
+                    g2, min_area_m2, keep_largest_if_all_removed
+                )
+                stats["parts_removed"] += parts_removed
+                if feature_removed:
+                    stats["features_removed"] += 1
+
+                return g3
+
+            gdf["geometry"] = gdf.geometry.apply(_process_geometry)
+
+            # Eliminar features que quedaron en None (si se permitió eliminar)
+            before = len(gdf)
+            gdf = gdf[~gdf.geometry.isna()].copy()
+            dropped_features = before - len(gdf)
+            # En teoría dropped_features == stats["features_removed"], pero lo registramos ambos por claridad
+            logger.info("Agujeros eliminados (total): %d", stats["holes_removed"])
+            logger.info("Geometrías internas eliminadas en MultiPolygon (total): %d", stats["parts_removed"])
+            logger.info("Features eliminados completamente por área: %d (drop efectivo: %d)",
+                        stats["features_removed"], dropped_features)
+
+        # 4) Convertir de vuelta a GeoJSON
         simplified_geojson = {
             "type": "FeatureCollection",
             "features": json.loads(gdf.to_json())["features"]
         }
-        
-        # 5. Guardar
+
+        # 5) Guardar
         out_name = f"{geojson_name}_simpl"
-        # tu función save_geojson supongo que existe
         save_geojson(simplified_geojson, filepath, out_name)
-        
-        logger.info(f"Proceso completado. Features finales: {len(gdf)}")
+
+        logger.info("Proceso completado. Features finales: %d", len(gdf))
         return simplified_geojson
-        
+
     except Exception as e:
         logger.error("Error al simplificar con GeoPandas: %s", str(e), exc_info=True)
         raise
@@ -865,7 +926,7 @@ if __name__ == "__main__":
     geojson_data, geojson_name = IGN_comunidades_autonomas(path=path)
 
     simpl = 0.1
-    min_area_m2 = simpl  * 10000000000
+    min_area_m2 = simpl  * 1000000000000000
 
     geojson_simpl = simplify_geojson(
         geojson_data=geojson_data,
