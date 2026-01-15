@@ -97,7 +97,7 @@ def IGN_codigos_postales(path: Optional[str], descarga_ID_json: bool=True):
             return []
 
         zip_bytes = io.BytesIO(resp.content)
-        codPostArray = []
+        codPostArray = {}
 
         try:
             with zipfile.ZipFile(zip_bytes) as zf:
@@ -137,7 +137,10 @@ def IGN_codigos_postales(path: Optional[str], descarga_ID_json: bool=True):
                                     "Campos vacíos %s:%d → %r", name, lineno, linea
                                 )
                                 continue
-                            codPostArray.append({"cod": cod, "name": nombre})
+                            if cod in codPostArray:
+                                codPostArray[cod]["names"] +=  f" | {nombre}"
+                            else:
+                                codPostArray[cod] = {"names": nombre}
 
         except zipfile.BadZipFile:
             logger.error("El archivo descargado no es un ZIP válido.")
@@ -174,12 +177,12 @@ def IGN_codigos_postales(path: Optional[str], descarga_ID_json: bool=True):
 
     gjson= {"type": "FeatureCollection", "features": []}
 
-    for i, codi in enumerate(codPostArray, start=1):
-        codigo = codi["cod"].lstrip("0")  # quitar ceros a la izquierda
+    for i, (clave, valor) in enumerate(codPostArray.items(), start=1):
+        codigo = clave.lstrip("0")  # quitar ceros a la izquierda
         # OJO: usa '&' en la URL real, no '&amp;'
         url = (
             "https://www.cartociudad.es/geocoder/api/geocoder/find"
-            f"?q={codigo}&type=Codpost&id={codigo}&outputformat=gjson"
+            f"?q={codigo}&type=Codpost&id={codigo}&outputformat=geojson"
         )
 
         try:
@@ -195,6 +198,7 @@ def IGN_codigos_postales(path: Optional[str], descarga_ID_json: bool=True):
                     if features and "geometry" in features[0]
                     else None
                 )
+                features[0]["properties"]["names"] = valor["names"]
                 gjson["features"].append(features[0])
                 logger.info(
                     "[%d/%d] Código %s -> geometry_type=%s",
@@ -242,6 +246,14 @@ def IGN_codigos_postales(path: Optional[str], descarga_ID_json: bool=True):
     save_geojson(gjson, path, gjson_name)
     logger.info("Proceso completado.")
     return gjson, gjson_name
+
+def codigospostales_codigos_postales(path: Optional[str]):
+    for i in range(52):
+        try:
+            return 
+        except Exception:
+            logger.exception("Error en la iteración %d", i)
+    return 
 
 def INE_secciones_censales(path: Optional[str]):
     """
@@ -379,8 +391,10 @@ def INE_secciones_censales(path: Optional[str]):
         return []
 
 def eurostat_countries(path: Optional[str], scale: Optional[str] = "60M"):
+
     gjson_name = "eurostat_countries"
     scales = ["60M", "20M", "10M", "03M", "01M"]
+
     if not scale in scales:
         raise ValueError(f"scale {scale} no está permitido. Los valores permitidos son: {scales}")
 
@@ -718,7 +732,7 @@ def simplify_geojson(
         }
 
         # Guardado (descomenta o adapta según tu función save_geojson)
-        out_name = f"{geojson_name}_simpl"
+        out_name = f"{geojson_name}_simpl_{str(simplification_tolerance).replace(".", "-")}"
         save_geojson(simplified_geojson, filepath, out_name)  # ← tu función de guardado
 
         logger.info(
@@ -743,10 +757,11 @@ def simplify_geojson(
 # =========================
 if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)  # "DEBUG" "INFO", "WARNING", "ERROR"
-    # codigos_postales(path="./codigos_postales/", descarga_ID_json=False)
-    path=""
+    
+    path="./geojson/"
+    geojson_data, geojson_name = IGN_codigos_postales(path=path, descarga_ID_json=True)
     # geojson_data, geojson_name = eurostat_countries(path=path)
-    geojson_data, geojson_name = IGN_provincias(path=path)
+    # geojson_data, geojson_name = IGN_provincias(path=path)
 
     simpl = 0.01
 
