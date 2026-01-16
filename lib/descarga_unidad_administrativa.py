@@ -12,11 +12,8 @@ from pyproj import Geod
 import geopandas as gpd
 from typing import Optional
 from pyproj import CRS, Transformer
-from shapely.geometry import shape, mapping, Polygon, MultiPolygon
 from shapely.geometry.base import BaseGeometry
-
-
-
+from shapely.geometry import shape, mapping, Polygon, MultiPolygon
 
 
 # =========================
