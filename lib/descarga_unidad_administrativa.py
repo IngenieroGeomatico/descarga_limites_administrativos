@@ -398,7 +398,128 @@ def eurostat_countries(path: Optional[str], scale: Optional[str] = "60M"):
     if not scale in scales:
         raise ValueError(f"scale {scale} no está permitido. Los valores permitidos son: {scales}")
 
-    url = f"https://gisco-services.ec.europa.eu/distribution/v2/countries/gjson/CNTR_RG_{scale}_2024_4326.gjson"
+    url = f"https://gisco-services.ec.europa.eu/distribution/v2/countries/geojson/CNTR_RG_{scale}_2024_4326.geojson"
+
+    try:
+        resp = requests.get(url, timeout=TIMEOUT)
+        resp.raise_for_status()
+        gjson = resp.json()
+        logger.info("Total de objetos encontrados: %d", len(gjson["features"]))
+
+    except requests.Timeout:
+        logger.warning("Timeout al consultar número total de objetos")
+    except requests.RequestException as e:
+        logger.error("Error HTTP al obtener conteo: %s", e)
+    except Exception as e:
+        logger.exception("Error inesperado al obtener conteo: %s", e)
+    
+    save_geojson(gjson, path, gjson_name)
+    logger.info("Proceso completado.")
+    return gjson, gjson_name
+
+def eurostat_communes(path: Optional[str]):
+
+    gjson_name = "eurostat_communes"
+
+    url = f"https://gisco-services.ec.europa.eu/distribution/v2/communes/geojson/COMM_RG_01M_2016_4326.geojson"
+
+    try:
+        resp = requests.get(url, timeout=TIMEOUT)
+        resp.raise_for_status()
+        gjson = resp.json()
+        logger.info("Total de objetos encontrados: %d", len(gjson["features"]))
+
+    except requests.Timeout:
+        logger.warning("Timeout al consultar número total de objetos")
+    except requests.RequestException as e:
+        logger.error("Error HTTP al obtener conteo: %s", e)
+    except Exception as e:
+        logger.exception("Error inesperado al obtener conteo: %s", e)
+    
+    save_geojson(gjson, path, gjson_name)
+    logger.info("Proceso completado.")
+    return gjson, gjson_name
+
+def eurostat_coastal(path: Optional[str], scale: Optional[str] = "60M"):
+
+    gjson_name = "eurostat_coastal"
+    scales = ["60M", "20M", "10M", "03M", "01M"]
+
+    if not scale in scales:
+        raise ValueError(f"scale {scale} no está permitido. Los valores permitidos son: {scales}")
+
+    url = f"https://gisco-services.ec.europa.eu/distribution/v2/coas/geojson/COAS_RG_{scale}_2016_4326.geojson"
+
+    try:
+        resp = requests.get(url, timeout=TIMEOUT)
+        resp.raise_for_status()
+        gjson = resp.json()
+        logger.info("Total de objetos encontrados: %d", len(gjson["features"]))
+
+    except requests.Timeout:
+        logger.warning("Timeout al consultar número total de objetos")
+    except requests.RequestException as e:
+        logger.error("Error HTTP al obtener conteo: %s", e)
+    except Exception as e:
+        logger.exception("Error inesperado al obtener conteo: %s", e)
+    
+    save_geojson(gjson, path, gjson_name)
+    logger.info("Proceso completado.")
+    return gjson, gjson_name
+
+def eurostat_LAU(path: Optional[str]):
+
+    gjson_name = "eurostat_LAU"
+    url = f"https://gisco-services.ec.europa.eu/distribution/v2/lau/geojson/LAU_RG_01M_2024_4326.geojson"
+
+    try:
+        resp = requests.get(url, timeout=TIMEOUT)
+        resp.raise_for_status()
+        gjson = resp.json()
+        logger.info("Total de objetos encontrados: %d", len(gjson["features"]))
+
+    except requests.Timeout:
+        logger.warning("Timeout al consultar número total de objetos")
+    except requests.RequestException as e:
+        logger.error("Error HTTP al obtener conteo: %s", e)
+    except Exception as e:
+        logger.exception("Error inesperado al obtener conteo: %s", e)
+    
+    save_geojson(gjson, path, gjson_name)
+    logger.info("Proceso completado.")
+    return gjson, gjson_name
+
+def eurostat_NUTS(path: Optional[str], scale: Optional[str] = "60M"):
+
+    gjson_name = "eurostat_NUTS"
+    scales = ["60M", "20M", "10M", "03M", "01M"]
+
+    if not scale in scales:
+        raise ValueError(f"scale {scale} no está permitido. Los valores permitidos son: {scales}")
+    
+    url = f"https://gisco-services.ec.europa.eu/distribution/v2/nuts/geojson/NUTS_RG_{scale}_2024_4326.geojson"
+
+    try:
+        resp = requests.get(url, timeout=TIMEOUT)
+        resp.raise_for_status()
+        gjson = resp.json()
+        logger.info("Total de objetos encontrados: %d", len(gjson["features"]))
+
+    except requests.Timeout:
+        logger.warning("Timeout al consultar número total de objetos")
+    except requests.RequestException as e:
+        logger.error("Error HTTP al obtener conteo: %s", e)
+    except Exception as e:
+        logger.exception("Error inesperado al obtener conteo: %s", e)
+    
+    save_geojson(gjson, path, gjson_name)
+    logger.info("Proceso completado.")
+    return gjson, gjson_name
+
+def eurostat_URAU(path: Optional[str]):
+
+    gjson_name = "eurostat_URAU"
+    url = f"https://gisco-services.ec.europa.eu/distribution/v2/urau/geojson/URAU_RG_100K_2024_4326.geojson"
 
     try:
         resp = requests.get(url, timeout=TIMEOUT)
@@ -759,8 +880,8 @@ if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)  # "DEBUG" "INFO", "WARNING", "ERROR"
     
     path="./geojson/"
-    geojson_data, geojson_name = IGN_codigos_postales(path=path, descarga_ID_json=True)
-    # geojson_data, geojson_name = eurostat_countries(path=path)
+    # geojson_data, geojson_name = IGN_codigos_postales(path=path, descarga_ID_json=True)
+    geojson_data, geojson_name = eurostat_countries(path=path)
     # geojson_data, geojson_name = IGN_provincias(path=path)
 
     simpl = 0.01
