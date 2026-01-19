@@ -4,16 +4,18 @@ import os
 import sys
 import time
 import json
+import random
 import zipfile
 import logging
 import requests
 import shapefile
 from pyproj import Geod
 import geopandas as gpd
-from typing import Optional
 from pyproj import CRS, Transformer
-from shapely.geometry import shape, mapping, Polygon, MultiPolygon
+from xml.etree import ElementTree as ET
+from typing import Optional, Tuple, Dict, Any
 from shapely.geometry.base import BaseGeometry
+from shapely.geometry import shape, mapping, Polygon, MultiPolygon
 
 
 
@@ -35,18 +37,36 @@ logger = logging.getLogger(__name__)
 # Constantes
 # =========================
 BASE_URL_API_IGN = "https://api-features.ign.es/collections/administrativeunit/items"
-TIMEOUT = 20
+TIMEOUT = 60
+MAX_RETRIES =  5
 DEFAULT_PAGE_SIZE = 20
-SLEEP_BETWEEN_REQUESTS = 3.0
+SLEEP_BETWEEN_REQUESTS = 2 + random.uniform(-1, 1)
+USER_AGENTS = [
+    # Chrome (el rey indiscutible ~65-70% del mercado)
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+
+    # Firefox (muy usado por privacidad)
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 14.7; rv:134.0) Gecko/20100101 Firefox/134.0",
+    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:134.0) Gecko/20100101 Firefox/134.0",
+
+    # Edge (cada vez más común en entornos Windows)
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0",
+
+    # Variaciones "congeladas" muy populares (muchos siguen reportando Win10)
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:134.0) Gecko/20100101 Firefox/134.0",
+]
 
 
 # =========================
 # Lógica principal
 # =========================
-"""
-URL referencia
-https://ec.europa.eu/eurostat/web/gisco/geodata
-"""
 
 def IGN_pais(path: Optional[str] = None, pag: int = DEFAULT_PAGE_SIZE):
     gjson_name = "IGN_pais"
@@ -168,11 +188,13 @@ def IGN_codigos_postales(path: Optional[str], descarga_ID_json: bool=True):
             logger.exception(f"No se pudo leer {path}")
 
     # Consulta a Geocoder por cada código
-    session = requests.Session()
+    session = crear_session_robusta()
     headers = {
         "Origin": "https://www.ign.es",
         "Referer": "https://www.ign.es",
-        "User-Agent": "Mozilla/5.0",
+        "User-Agent": random.choice(USER_AGENTS),
+        "Accept-Language": "es-ES,es;q=0.9",
+        "Accept": "*/*",
     }
 
     gjson= {"type": "FeatureCollection", "features": []}
@@ -247,13 +269,437 @@ def IGN_codigos_postales(path: Optional[str], descarga_ID_json: bool=True):
     logger.info("Proceso completado.")
     return gjson, gjson_name
 
-def codigospostales_codigos_postales(path: Optional[str]):
-    for i in range(52):
+def correos_codigos_postales(
+    path: Optional[str] = None,
+    descarga_ID_json: bool = True
+) -> Tuple[Dict[str, Any], str]:
+    """
+    Descarga ZIP códigos postales → extrae {código: nombres},
+    y consulta la API de CORREOS por cada código para obtener polígono.
+    Devuelve FeatureCollection GeoJSON estándar.
+    """
+    logger.info("------ CODIGOS POSTALES - API Correos Polygon ------")
+
+    gjson_name = "correos_codigos_postales"
+
+    # ── 1. Obtener/obtener códigos postales ───────────────────────────────
+    if descarga_ID_json:
+        URLzipCod = "https://www.codigospostales.com/codigos1220n.zip"
+        logger.info("Descargando ZIP códigos postales: %s", URLzipCod)
+
         try:
-            return 
+            resp = requests.get(URLzipCod, timeout=TIMEOUT)
+            resp.raise_for_status()
+        except requests.exceptions.Timeout:
+            logger.error("Timeout al descargar ZIP (30s)")
+            return {"type": "FeatureCollection", "features": []}, gjson_name
+        except requests.exceptions.RequestException as e:
+            logger.error("Error descargando ZIP: %s", e)
+            return {"type": "FeatureCollection", "features": []}, gjson_name
+
+        zip_bytes = io.BytesIO(resp.content)
+        codPostArray: Dict[str, Dict[str, str]] = {}
+
+        try:
+            with zipfile.ZipFile(zip_bytes) as zf:
+                for name in zf.namelist():
+                    if not name.lower().endswith(".txt"):
+                        continue
+                    if name in ("codciu.txt", "ADxcodpos.txt"):
+                        logger.debug("Excluyendo %s", name)
+                        continue
+
+                    logger.info("Procesando: %s", name)
+
+                    with zf.open(name, "r") as f:
+                        contenido = f.read().decode("utf-8", errors="replace")
+                        for lineno, linea in enumerate(contenido.splitlines(), 1):
+                            if not linea.strip():
+                                continue
+                            linea = linea.replace(";", ":")
+                            parts = linea.split(":")
+                            if len(parts) < 2:
+                                continue
+
+                            cod = parts[0].strip()
+                            nombre = parts[1].strip()
+
+                            if not cod or not nombre:
+                                continue
+
+                            if cod in codPostArray:
+                                codPostArray[cod]["names"] += f" | {nombre}"
+                            else:
+                                codPostArray[cod] = {"names": nombre}
+
+        except zipfile.BadZipFile:
+            logger.error("ZIP inválido")
+            return {"type": "FeatureCollection", "features": []}, gjson_name
+        except Exception as e:
+            logger.exception("Error procesando ZIP: %s", e)
+            return {"type": "FeatureCollection", "features": []}, gjson_name
+
+        logger.info("Registros extraídos: %d", len(codPostArray))
+
+        # Guardado opcional del diccionario intermedio
+        try:
+            with open("codigos_postales.json", "w", encoding="utf-8") as fh:
+                json.dump(codPostArray, fh, ensure_ascii=False, indent=2)
+            logger.info("Guardado JSON intermedio en: %s", path)
         except Exception:
-            logger.exception("Error en la iteración %d", i)
-    return 
+            logger.exception("No se pudo guardar %s", path)
+
+    else:
+        # Cargar desde disco
+        try:
+            with open("codigos_postales.json", "r", encoding="utf-8") as fh:
+                codPostArray = json.load(fh)
+            logger.info(f"Cargado JSON desde: {path}")
+        except Exception:
+            logger.exception(f"No se pudo leer {path}")
+
+    # ── 2. Consulta API Correos por cada código ─────────────────────────────
+    session = crear_session_robusta()
+
+    
+    gjson = {
+        "type": "FeatureCollection",
+        "features": []
+    }
+
+    codPostArrayAleatorio = reordenar_array_aleatoriamente(codPostArray)
+
+    total = len(codPostArrayAleatorio)
+
+    for i, (codigo_original, data) in enumerate(codPostArrayAleatorio.items(), 1):
+
+        porcentaje = i / total
+        bar_length = 30
+        filled = int(bar_length * porcentaje)
+        bar = "█" * filled + "░" * (bar_length - filled)
+        print(f"\r[{bar}] {porcentaje:>6.1%}  ({i}/{total})", end="", flush=True)
+
+        # La API acepta código con 5 dígitos (ceros a la izquierda)
+        codigo = codigo_original.zfill(5)
+
+        url = f"https://api1.correos.es/digital-services/searchengines/api/v1/postalcodes/polygon?postalcode={codigo}"
+
+        try:
+
+            headers = {
+                "Origin": "https://www.correos.es",
+                "Referer": "https://www.correos.es",
+                "User-Agent": random.choice(USER_AGENTS),
+                "Accept-Language": "es-ES,es;q=0.9",
+                "Accept": "*/*",
+                "Host": "api1.correos.es"
+            }
+
+            response = session.get(url, headers=headers, timeout=TIMEOUT)
+            response.raise_for_status()
+
+            raw_data = response.json()
+
+            # ── Transformación a GeoJSON estándar ───────────────────────
+            features_raw = raw_data.get("features", [])
+
+            for feat_raw in features_raw:
+                rings = feat_raw.get("geometry", {}).get("rings", [])
+                if not rings:
+                    continue
+
+                # Construimos geometría GeoJSON estándar
+                if len(rings) == 1:
+                    geom_type = "Polygon"
+                    coordinates = rings  # ya es lista de anillos
+                else:
+                    geom_type = "MultiPolygon"
+                    coordinates = [[ring] for ring in rings]  # cada anillo → su propio polígono
+
+                feature = {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": geom_type,
+                        "coordinates": coordinates
+                    },
+                    "properties": {
+                        "codigo_postal": codigo,
+                        "names": data["names"],
+                        "source": "Correos.es Polygon API"
+                    }
+                }
+
+                gjson["features"].append(feature)
+
+            logger.info(
+                "[%d/%d] OK %s → %d polígono(s)",
+                i, total, codigo, len(features_raw)
+            )
+
+        except requests.exceptions.HTTPError as e:
+            print((
+                "[%d/%d] HTTP %d → %s | %s",
+                i, total, response.status_code, codigo, url
+            ))
+            logger.warning(
+                "[%d/%d] HTTP %d → %s | %s",
+                i, total, response.status_code, codigo, url
+            )
+        except requests.exceptions.Timeout:
+            print(("[%d/%d] Timeout → %s", i, total, codigo))
+            logger.warning("[%d/%d] Timeout → %s", i, total, codigo)
+        except Exception as e:
+            print((
+                "[%d/%d] Error procesando %s | %s",
+                i, total, codigo, url
+            ))
+            logger.exception(
+                "[%d/%d] Error procesando %s | %s",
+                i, total, codigo, url
+            )
+
+        time.sleep(SLEEP_BETWEEN_REQUESTS)
+
+    # ── Guardar resultado final ───────────────────────────────────────────
+    if path:
+        try:
+            final_path = path.replace(".json", f"_{gjson_name}.geojson")
+            with open(final_path, "w", encoding="utf-8") as f:
+                json.dump(gjson, f, ensure_ascii=False, indent=2)
+            logger.info("GeoJSON guardado en: %s", final_path)
+        except Exception:
+            logger.exception("No se pudo guardar GeoJSON final")
+
+    logger.info("Proceso completado → %d features", len(gjson["features"]))
+
+    return gjson, gjson_name
+
+def codigospostales_codigos_postales(
+    path: Optional[str] = None,
+    combinar_todo: bool = True
+) -> Tuple[Dict[str, Any], str]:
+    """
+    Descarga KML de provincias desde codigospostales.com,
+    los convierte a GeoJSON y los guarda/combina en el path indicado.
+    
+    Returns:
+        (geojson_resultado, nombre_archivo)
+    """
+
+    KML_NS = {
+        "kml": "http://www.opengis.net/kml/2.2",
+        "gx":  "http://www.google.com/kml/ext/2.2"
+    }
+
+    def kml_to_geojson_features(kml_root, province_code: str) -> list:
+        """
+        Convierte Placemarks de KML a Features GeoJSON.
+        Maneja:
+        - Polygon simple
+        - MultiGeometry (varios Polygon)
+        - innerBoundaryIs (agujeros)
+        """
+        features = []
+
+        # Buscamos todos los Placemarks (pueden estar directamente o dentro de Folder)
+        for placemark in kml_root.findall(".//kml:Placemark", KML_NS):
+            # Nombre (puede no existir)
+            name_elem = placemark.find("kml:name", KML_NS)
+            name = name_elem.text.strip() if name_elem is not None and name_elem.text else f"CP desconocido - Prov {province_code}"
+
+            # Intentamos obtener CODPOS desde ExtendedData (muy útil para propiedades)
+            codpos = "desconocido"
+            extended = placemark.find("kml:ExtendedData", KML_NS)
+            if extended is not None:
+                for sd in extended.findall(".//kml:SimpleData", KML_NS):
+                    if sd.get("name") == "CODPOS":
+                        codpos = sd.text.strip()
+
+            # Recolectamos todas las geometrías del Placemark
+            geometries = extract_geometries(placemark)
+
+            for geom_type, coordinates in geometries:
+                if not coordinates:
+                    continue
+
+                feature = {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": geom_type,
+                        "coordinates": coordinates
+                    },
+                    "properties": {
+                        "province_code": province_code,
+                        "codpos": codpos,
+                        "name": name,
+                        "source": "codigospostales.com KML",
+                        "description": f"Provincia {province_code} - Código Postal {codpos}"
+                    }
+                }
+                features.append(feature)
+
+        return features
+
+    def extract_geometries(placemark_elem) -> list:
+        """
+        Devuelve lista de tuplas (geom_type, coordinates)
+        Soporta Polygon y MultiGeometry
+        """
+        results = []
+
+        # Caso 1: Polygon directo
+        for poly in placemark_elem.findall(".//kml:Polygon", KML_NS):
+            coords_list = extract_polygon_coordinates(poly)
+            if coords_list:
+                results.append(("Polygon", coords_list))
+
+        # Caso 2: MultiGeometry
+        for multi in placemark_elem.findall(".//kml:MultiGeometry", KML_NS):
+            polygons_coords = []
+
+            for poly in multi.findall(".//kml:Polygon", KML_NS):
+                poly_coords = extract_polygon_coordinates(poly)
+                if poly_coords:
+                    polygons_coords.append(poly_coords)
+
+            if polygons_coords:
+                if len(polygons_coords) == 1:
+                    # Si solo hay uno → tratamos como Polygon normal
+                    results.append(("Polygon", polygons_coords[0]))
+                else:
+                    # Varios polígonos → MultiPolygon
+                    results.append(("MultiPolygon", polygons_coords))
+
+        return results
+
+    def extract_polygon_coordinates(polygon_elem) -> list:
+        """
+        Extrae coordenadas de un <Polygon> incluyendo posibles innerBoundaryIs
+        Retorna: [[outer_coords], [inner1], [inner2], ...]
+        """
+        outer_ring = None
+        inner_rings = []
+
+        # outerBoundaryIs (obligatorio)
+        outer_elem = polygon_elem.find(".//kml:outerBoundaryIs/kml:LinearRing/kml:coordinates", KML_NS)
+        if outer_elem is not None and outer_elem.text:
+            outer_ring = parse_coordinates(outer_elem.text.strip())
+
+        if not outer_ring:
+            return []
+
+        # innerBoundaryIs (opcional, puede haber varios)
+        for inner_elem in polygon_elem.findall(".//kml:innerBoundaryIs/kml:LinearRing/kml:coordinates", KML_NS):
+            if inner_elem.text:
+                inner_coords = parse_coordinates(inner_elem.text.strip())
+                if inner_coords:
+                    inner_rings.append(inner_coords)
+
+        # Formato GeoJSON para Polygon: [outer, inner1?, inner2?, ...]
+        coordinates = [outer_ring]
+        if inner_rings:
+            coordinates.extend(inner_rings)
+
+        return coordinates
+
+    def parse_coordinates(text: str) -> list:
+        """ 'lon,lat,alt lon,lat,alt ...' → [[lon, lat], ...] """
+        coords = []
+        for part in text.split():
+            try:
+                lon_str, lat_str, *_ = part.split(",")
+                lon = float(lon_str)
+                lat = float(lat_str)
+                coords.append([lon, lat])  # GeoJSON: [lon, lat]
+            except (ValueError, IndexError):
+                continue
+
+        # Mínimo razonable para un polígono cerrado
+        if len(coords) >= 4 and coords[0] == coords[-1]:
+            return coords[:-1]  # quitamos el último punto repetido (opcional pero limpio)
+
+        return coords if len(coords) >= 3 else []
+    
+    logger.info("------ DESCARGA KML PROVINCIAS → GEOJSON ------")
+
+    gjson_name = "codigospostales_codigos_postales"
+
+    base_url = "https://www.codigospostales.com/kml/k{}.kml"
+    
+    provincias = [
+        "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
+        "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
+        "21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
+        "31", "32", "33", "34", "35", "36", "37", "38", "39", "40",
+        "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
+        "51", "52"
+    ]
+
+    feature_collection = {
+        "type": "FeatureCollection",
+        "features": []
+    }
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (compatible; KMLDownloader/1.0)",
+        "Accept": "*/*"
+    }
+    headers = {
+        "Origin": "https://www.codigospostales.com/",
+        "Referer": "https://www.codigospostales.com/",
+        "User-Agent": random.choice(USER_AGENTS),
+        "Accept-Language": "es-ES,es;q=0.9",
+        "Accept": "*/*",
+    }
+
+    session = crear_session_robusta()
+
+    for i, cod_prov in enumerate(provincias, 1):
+        url = base_url.format(cod_prov)
+        logger.info(f"[{i}/{len(provincias)}] Intentando descargar: {url}")
+
+        try:
+            resp = session.get(url, headers=headers, timeout=TIMEOUT)
+            
+            if resp.status_code == 404:
+                logger.info(f"  → No existe KML para provincia {cod_prov}")
+                continue
+                
+            resp.raise_for_status()
+            
+            # Intentamos parsear como KML/XML
+            try:
+                root = ET.fromstring(resp.content)
+            except ET.ParseError:
+                logger.warning(f"  → No es XML válido → {url}")
+                continue
+
+            # ── Conversión básica KML → GeoJSON (simplificada) ───────────────
+            features = kml_to_geojson_features(root, cod_prov)
+            
+            if features:
+                feature_collection["features"].extend(features)
+                logger.info(f"  → OK - {len(features)} feature(s) añadida(s)")
+            else:
+                logger.warning(f"  → No se encontraron geometrías válidas")
+
+        except requests.exceptions.HTTPError as e:
+            logger.warning(f"  → HTTP {resp.status_code} - {e}")
+        except requests.exceptions.Timeout:
+            logger.warning(f"  → Timeout")
+        except Exception as e:
+            logger.exception(f"  → Error procesando {url}")
+
+        time.sleep(SLEEP_BETWEEN_REQUESTS)
+
+    # Guardar resultado
+    if feature_collection["features"]:
+        save_geojson(feature_collection, path, gjson_name)
+        return feature_collection, gjson_name
+    
+    else:
+        logger.warning("No se obtuvo ninguna geometría válida")
+        return {"type": "FeatureCollection", "features": []}, gjson_name
 
 def INE_secciones_censales(path: Optional[str]):
     """
@@ -421,6 +867,17 @@ def eurostat_countries(path: Optional[str], scale: Optional[str] = "60M"):
 # =========================
 # Funciones transversales
 # =========================
+def crear_session_robusta():
+    session = requests.Session()
+    adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    return session
+
+def reordenar_array_aleatoriamente(array):
+    d_aleatorio = dict(random.sample(list(array.items()), len(array)))
+    return d_aleatorio
+
 def get_total_count(session: requests.Session, params: dict) -> Optional[int]:
     """Obtiene el número total de features (numberMatched) con limit=1"""
     url = f"{BASE_URL_API_IGN}?f=json&limit=1"
@@ -542,7 +999,7 @@ def descargar_nivel_administrativo(
 
     logger.info("Iniciando descarga: %s - IGN API-Features", nivel)
 
-    session = requests.Session()
+    session = crear_session_robusta()
 
     params = {
         "nationallevelname": nivel
@@ -757,9 +1214,11 @@ def simplify_geojson(
 # =========================
 if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)  # "DEBUG" "INFO", "WARNING", "ERROR"
-    
     path="./geojson/"
-    geojson_data, geojson_name = IGN_codigos_postales(path=path, descarga_ID_json=True)
+
+    # geojson_data, geojson_name = IGN_codigos_postales(path=path, descarga_ID_json=True)
+    geojson_data, geojson_name = correos_codigos_postales(path=path, descarga_ID_json=False)
+    # geojson_data, geojson_name = codigospostales_codigos_postales(path=path)
     # geojson_data, geojson_name = eurostat_countries(path=path)
     # geojson_data, geojson_name = IGN_provincias(path=path)
 
