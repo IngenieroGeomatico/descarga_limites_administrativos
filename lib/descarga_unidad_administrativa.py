@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 BASE_URL_API_IGN = "https://api-features.ign.es/collections/administrativeunit/items"
 TIMEOUT = 60
 MAX_RETRIES =  5
+MIN_VERTICES = 4
 DEFAULT_PAGE_SIZE = 20
 SLEEP_BETWEEN_REQUESTS = 2 + random.uniform(-1, 1)
 USER_AGENTS = [
@@ -61,6 +62,7 @@ USER_AGENTS = [
 ]
 SLEEP_BETWEEN_REQUESTS = 3.0
 VALID_SCALES = ["60M", "20M", "10M", "03M", "01M"]
+NUTS_LEVELS=[None,0,1,2,3]
 
 
 # =========================
@@ -194,6 +196,7 @@ def IGN_codigos_postales(path: Optional[str], descarga_ID_json: bool=True):
         "User-Agent": random.choice(USER_AGENTS),
         "Accept-Language": "es-ES,es;q=0.9",
         "Accept": "*/*",
+        "Host": "https://www.ign.es"
     }
 
     gjson= {"type": "FeatureCollection", "features": []}
@@ -369,6 +372,7 @@ def correos_codigos_postales(
     codPostArrayAleatorio = reordenar_array_aleatoriamente(codPostArray)
 
     total = len(codPostArrayAleatorio)
+    inicio = time.time()
 
     for i, (codigo_original, data) in enumerate(codPostArrayAleatorio.items(), 1):
 
@@ -377,6 +381,26 @@ def correos_codigos_postales(
         filled = int(bar_length * porcentaje)
         bar = "█" * filled + "░" * (bar_length - filled)
         print(f"\r[{bar}] {porcentaje:>6.1%}  ({i}/{total})", end="", flush=True)
+
+        transcurrido = time.time() - inicio
+    
+        # ETA = tiempo restante estimado
+        if i > 5:  # evitamos divisiones por números muy pequeños al inicio
+            tiempo_por_item = transcurrido / i
+            restante = tiempo_por_item * (total - i)
+            min_rest = int(restante // 60)
+            seg_rest = int(restante % 60)
+        else:
+            min_rest = seg_rest = "--"
+        
+        min_trans = int(transcurrido // 60)
+        seg_trans = int(transcurrido % 60)
+        
+        print(
+            f"\r[{bar}] {porcentaje:>6.1%}  ({i:5d}/{total})  "
+            f" {min_trans:2d}m {seg_trans:02d}s  |  ETA: {min_rest:2d}m {seg_rest:02d}s   ",
+            end="", flush=True
+        )
 
         # La API acepta código con 5 dígitos (ceros a la izquierda)
         codigo = codigo_original.zfill(5)
@@ -708,14 +732,111 @@ def INE_secciones_censales(path: Optional[str]):
     - Devuelve un dict gjson (FeatureCollection). Si `path` no es None, guarda el gjson en esa ruta.
     """
     URLzipsec_cens = "https://www.ine.es/prodyser/cartografia/seccionado_2025.zip"
-    to_epsg = 4326  # Cambia a None si quieres mantener el CRS original
 
     gjson_name = "INE_secciones_censales"
 
     logger.info("Descargando ZIP de secciones censales: %s", URLzipsec_cens)
+    gjson = shp2geojson(URLzipsec_cens)
+    save_geojson(gjson, path,gjson_name)
+    logger.info("Proceso completado.")
+    return gjson, gjson_name
 
+def eurostat_countries(path: Optional[str], scale: str = "60M"):
+    if scale not in VALID_SCALES:
+        raise ValueError(f"scale {scale} no permitido. Valores: {VALID_SCALES}")
+
+    url = f"https://gisco-services.ec.europa.eu/distribution/v2/countries/geojson/CNTR_RG_{scale}_2024_4326.geojson"
+    return descarga_eurostat(path, "eurostat_countries", url)
+
+def eurostat_communes(path: Optional[str]):
+    url = "https://gisco-services.ec.europa.eu/distribution/v2/communes/geojson/COMM_RG_01M_2016_4326.geojson"
+    return descarga_eurostat(path, "eurostat_communes", url)
+
+def eurostat_coastal(path: Optional[str], scale: str = "60M"):
+    if scale not in VALID_SCALES:
+        raise ValueError(f"scale {scale} no permitido. Valores: {VALID_SCALES}")
+
+    url = f"https://gisco-services.ec.europa.eu/distribution/v2/coas/geojson/COAS_RG_{scale}_2016_4326.geojson"
+    return descarga_eurostat(path, "eurostat_coastal", url)
+
+def eurostat_LAU(path: Optional[str]):
+    url = "https://gisco-services.ec.europa.eu/distribution/v2/lau/geojson/LAU_RG_01M_2024_4326.geojson"
+    return descarga_eurostat(path, "eurostat_LAU", url)
+
+def eurostat_NUTS(path: Optional[str], scale: str = "60M", nut_level: Optional[int]= None):
+    if scale not in VALID_SCALES:
+        raise ValueError(f"scale {scale} no permitido. Valores: {VALID_SCALES}")
+
+    if nut_level not in NUTS_LEVELS:
+        raise ValueError(f"nut_level {nut_level} no permitido. Valores: {NUTS_LEVELS}")
+
+    url = f"https://gisco-services.ec.europa.eu/distribution/v2/nuts/geojson/NUTS_RG_{scale}_2024_4326.geojson"
+    return descarga_eurostat(path, "eurostat_NUTS", url,nut_level)
+
+def eurostat_URAU(path: Optional[str]):
+    url = "https://gisco-services.ec.europa.eu/distribution/v2/urau/geojson/URAU_RG_100K_2024_4326.geojson"
+    return descarga_eurostat(path, "eurostat_URAU", url)
+
+def madrid_barrios(path: Optional[str]):
+    url = "https://geoportal.madrid.es/fsdescargas/IDEAM_WBGEOPORTAL/LIMITES_ADMINISTRATIVOS/Barrios/Barrios.zip"
+    gjson_name = "madrid_barrios"
+
+    logger.info("Descargando ZIP de barrios: %s", url)
+    gjson = shp2geojson(url)
+    save_geojson(gjson, path,gjson_name)
+    logger.info("Proceso completado.")
+    return gjson, gjson_name
+
+def madrid_barrios_historicos(path: Optional[str]):
+    url = "https://geoportal.madrid.es/fsdescargas/IDEAM_WBGEOPORTAL/LIMITES_ADMINISTRATIVOS/Barrios/Historicos/Divisiones_Historicas.zip"
+    gjson_name = "madrid_barrios_historicos"
+
+    logger.info("Descargando ZIP de barrios historicos: %s", url)
+    gjson = shp2geojson(url)
+    save_geojson(gjson, path,gjson_name)
+    logger.info("Proceso completado.")
+    return gjson, gjson_name
+
+def madrid_distritos(path: Optional[str]):
+    url = "https://geoportal.madrid.es/fsdescargas/IDEAM_WBGEOPORTAL/LIMITES_ADMINISTRATIVOS/Distritos/Distritos.zip"
+    gjson_name = "madrid_distritos"
+
+    logger.info("Descargando ZIP de distritos: %s", url)
+    gjson = shp2geojson(url)
+    save_geojson(gjson, path,gjson_name)
+    logger.info("Proceso completado.")
+    return gjson, gjson_name
+
+def madrid_distritos_historicos(path: Optional[str]):
+    url = "https://geoportal.madrid.es/fsdescargas/IDEAM_WBGEOPORTAL/LIMITES_ADMINISTRATIVOS/Distritos/Historicos/Divisiones_Historicas.zip"
+    gjson_name = "madrid_distritos_historicos"
+
+    logger.info("Descargando ZIP de distritos historicos: %s", url)
+    gjson = shp2geojson(url)
+    save_geojson(gjson, path,gjson_name)
+    logger.info("Proceso completado.")
+    return gjson, gjson_name
+
+
+
+
+# =========================
+# Funciones transversales
+# =========================
+def crear_session_robusta():
+    session = requests.Session()
+    adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    return session
+
+def reordenar_array_aleatoriamente(array):
+    d_aleatorio = dict(random.sample(list(array.items()), len(array)))
+    return d_aleatorio
+
+def shp2geojson(url: str):
     try:
-        resp = requests.get(URLzipsec_cens, timeout=30)
+        resp = requests.get(url, timeout=30)
         resp.raise_for_status()
     except requests.exceptions.Timeout:
         logger.error("Timeout al descargar el ZIP (30s).")
@@ -767,6 +888,8 @@ def INE_secciones_censales(path: Optional[str]):
 
             # Preparar reproyección
             transformer = None
+            to_epsg = 4326  # Cambia a None si quieres mantener el CRS original
+
             if to_epsg is not None and src_crs is not None:
                 try:
                     dst_crs = CRS.from_epsg(to_epsg)
@@ -822,11 +945,7 @@ def INE_secciones_censales(path: Optional[str]):
             shp_f.close(); shx_f.close(); dbf_f.close()
 
             gjson = {"type": "FeatureCollection", "features": features}
-
-            save_geojson(gjson, path, gjson_name)
-            logger.info("Proceso completado.")
-
-            return gjson, gjson_name
+            return gjson
 
     except zipfile.BadZipFile:
         logger.error("El archivo descargado no es un ZIP válido.")
@@ -834,54 +953,6 @@ def INE_secciones_censales(path: Optional[str]):
     except Exception as e:
         logger.exception("Error procesando el ZIP: %s", e)
         return []
-
-def eurostat_countries(path: Optional[str], scale: str = "60M"):
-    if scale not in VALID_SCALES:
-        raise ValueError(f"scale {scale} no permitido. Valores: {VALID_SCALES}")
-
-    url = f"https://gisco-services.ec.europa.eu/distribution/v2/countries/geojson/CNTR_RG_{scale}_2024_4326.geojson"
-    return descarga_eurostat(path, "eurostat_countries", url)
-
-def eurostat_communes(path: Optional[str]):
-    url = "https://gisco-services.ec.europa.eu/distribution/v2/communes/geojson/COMM_RG_01M_2016_4326.geojson"
-    return descarga_eurostat(path, "eurostat_communes", url)
-
-def eurostat_coastal(path: Optional[str], scale: str = "60M"):
-    if scale not in VALID_SCALES:
-        raise ValueError(f"scale {scale} no permitido. Valores: {VALID_SCALES}")
-
-    url = f"https://gisco-services.ec.europa.eu/distribution/v2/coas/geojson/COAS_RG_{scale}_2016_4326.geojson"
-    return descarga_eurostat(path, "eurostat_coastal", url)
-
-def eurostat_LAU(path: Optional[str]):
-    url = "https://gisco-services.ec.europa.eu/distribution/v2/lau/geojson/LAU_RG_01M_2024_4326.geojson"
-    return descarga_eurostat(path, "eurostat_LAU", url)
-
-def eurostat_NUTS(path: Optional[str], scale: str = "60M"):
-    if scale not in VALID_SCALES:
-        raise ValueError(f"scale {scale} no permitido. Valores: {VALID_SCALES}")
-
-    url = f"https://gisco-services.ec.europa.eu/distribution/v2/nuts/geojson/NUTS_RG_{scale}_2024_4326.geojson"
-    return descarga_eurostat(path, "eurostat_NUTS", url)
-
-def eurostat_URAU(path: Optional[str]):
-    url = "https://gisco-services.ec.europa.eu/distribution/v2/urau/geojson/URAU_RG_100K_2024_4326.geojson"
-    return descarga_eurostat(path, "eurostat_URAU", url)
-
-
-# =========================
-# Funciones transversales
-# =========================
-def crear_session_robusta():
-    session = requests.Session()
-    adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
-    session.mount("http://", adapter)
-    session.mount("https://", adapter)
-    return session
-
-def reordenar_array_aleatoriamente(array):
-    d_aleatorio = dict(random.sample(list(array.items()), len(array)))
-    return d_aleatorio
 
 def get_total_count(session: requests.Session, params: dict) -> Optional[int]:
     """Obtiene el número total de features (numberMatched) con limit=1"""
@@ -1019,7 +1090,7 @@ def descarga_IGN(
     finally:
         logger.info("Proceso finalizado para %s", nivel)
 
-def descarga_eurostat(path: Optional[str], name: str, url: str) -> tuple:
+def descarga_eurostat(path: Optional[str], name: str, url: str, nut_level: Optional[int]= None) -> tuple:
     """
     Función genérica para descargar un GeoJSON desde Eurostat.
     """
@@ -1038,6 +1109,10 @@ def descarga_eurostat(path: Optional[str], name: str, url: str) -> tuple:
     except Exception as e:
         logger.exception("Error inesperado al obtener conteo: %s", e)
         raise
+
+    if nut_level:
+        gjson["features"] = [f for f in gjson["features"] if f["properties"]["LEVL_CODE"] == nut_level]
+        name = f"{name}_{nut_level}"
 
     save_geojson(gjson, path, name)
     logger.info("Proceso completado.")
@@ -1074,7 +1149,7 @@ def simplify_geojson(
         return max(0.0, ext - holes)
 
     # ── Quitar agujeros pequeños ────────────────────────────────────────────
-    def remove_small_holes(poly: Polygon,  min_vertices_hole: int = 4):
+    def remove_small_holes(poly: Polygon,  min_vertices_hole: int = MIN_VERTICES):
         """
         Elimina agujeros que sean:
         - demasiado pequeños (área < min_area)
@@ -1106,7 +1181,7 @@ def simplify_geojson(
     def clean_geometry(
         geom,
         keep_largest: bool,
-        min_vertices: int = 4
+        min_vertices: int = MIN_VERTICES
     ) -> tuple[BaseGeometry | None, int, int, int]:  # geom, holes_rem, parts_rem, feat_rem
         if geom is None or geom.is_empty:
             return None, 0, 0, 0
@@ -1238,7 +1313,6 @@ def simplify_geojson(
 
 
 
-
 # =========================
 # Main
 # =========================
@@ -1246,13 +1320,44 @@ if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)  # "DEBUG" "INFO", "WARNING", "ERROR"
     path="./geojson/"
 
+    '''
+    IGN
+    '''
     # geojson_data, geojson_name = IGN_codigos_postales(path=path, descarga_ID_json=True)
-    geojson_data, geojson_name = correos_codigos_postales(path=path, descarga_ID_json=False)
-    # geojson_data, geojson_name = codigospostales_codigos_postales(path=path)
-    # geojson_data, geojson_name = eurostat_countries(path=path)
-    # geojson_data, geojson_name = IGN_codigos_postales(path=path, descarga_ID_json=True)
-    # geojson_data, geojson_name = eurostat_countries(path=path)
     # geojson_data, geojson_name = IGN_provincias(path=path)
+
+    '''
+    INE
+    '''
+    geojson_data, geojson_name = INE_secciones_censales(path=path)
+
+    '''
+    Correos y codigospostales
+    '''
+    # geojson_data, geojson_name = correos_codigos_postales(path=path, descarga_ID_json=False)
+    # geojson_data, geojson_name = codigospostales_codigos_postales(path=path)
+
+    '''
+    Eurostats
+    '''
+    # geojson_data, geojson_name = eurostat_countries(path=path)
+    # geojson_data, geojson_name = eurostat_communes(path=path)
+    # geojson_data, geojson_name = eurostat_coastal(path=path)
+    # geojson_data, geojson_name = eurostat_NUTS(path=path, nut_level=0)
+    # geojson_data, geojson_name = eurostat_NUTS(path=path, nut_level=1)
+    # geojson_data, geojson_name = eurostat_NUTS(path=path, nut_level=2)
+    # geojson_data, geojson_name = eurostat_NUTS(path=path, nut_level=3)
+    # geojson_data, geojson_name = eurostat_LAU(path=path)
+    # geojson_data, geojson_name = eurostat_URAU(path=path)
+
+    '''
+    Madrid
+    '''
+    # geojson_data, geojson_name = madrid_barrios(path=path)
+    # # # # geojson_data, geojson_name = madrid_barrios_historicos(path=path)
+    # geojson_data, geojson_name = madrid_distritos(path=path)
+    # # # # geojson_data, geojson_name = madrid_distritos_historicos(path=path)
+
 
     simpl = 0.01
 
