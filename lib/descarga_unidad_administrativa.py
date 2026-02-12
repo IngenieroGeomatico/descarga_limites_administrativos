@@ -835,124 +835,128 @@ def reordenar_array_aleatoriamente(array):
     return d_aleatorio
 
 def shp2geojson(url: str):
+    import requests, io, zipfile, shapefile
+    from pyproj import CRS, Transformer
+
+    def process_single_zip(zip_bytes: bytes, zip_label: str):
+        """Procesa un ZIP que contiene un shapefile y devuelve una lista de features"""
+        try:
+            with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
+
+                names = zf.namelist()
+
+                shp_name = shx_name = dbf_name = prj_name = None
+                for name in names:
+                    low = name.lower()
+                    if low.endswith(".shp"): shp_name = name
+                    elif low.endswith(".shx"): shx_name = name
+                    elif low.endswith(".dbf"): dbf_name = name
+                    elif low.endswith(".prj"): prj_name = name
+
+                if not (shp_name and shx_name and dbf_name):
+                    logger.warning(f"{zip_label}: No contiene shapefile completo.")
+                    return []
+
+                # Open files from the ZIP
+                shp_f = zf.open(shp_name)
+                shx_f = zf.open(shx_name)
+                dbf_f = zf.open(dbf_name)
+
+                # Read CRS if available
+                src_crs = None
+                if prj_name:
+                    raw = zf.open(prj_name).read()
+                    try: wkt = raw.decode("utf-8")
+                    except: wkt = raw.decode("latin-1", errors="ignore")
+                    try: src_crs = CRS.from_wkt(wkt)
+                    except: pass
+
+                transformer = None
+                to_epsg = 4326
+                if src_crs:
+                    try:
+                        dst = CRS.from_epsg(to_epsg)
+                        transformer = Transformer.from_crs(src_crs, dst, always_xy=True)
+                    except:
+                        transformer = None
+
+                reader = shapefile.Reader(shp=shp_f, shx=shx_f, dbf=dbf_f, encoding="latin-1")
+                fields = reader.fields[1:]
+                field_names = [f[0] for f in fields]
+
+                def proj(x, y):
+                    return transformer.transform(x, y) if transformer else (x, y)
+
+                def proj_list(coords):
+                    return [proj(x, y) for x, y in coords]
+
+                def shape_to_geom(shape):
+                    t = shape.shapeType
+                    if t in [shapefile.POINT, shapefile.POINTZ]:
+                        x, y = proj(*shape.points[0])
+                        return {"type": "Point", "coordinates": [x, y]}
+                    elif t in [shapefile.MULTIPOINT, shapefile.MULTIPOINTZ]:
+                        return {"type": "MultiPoint", "coordinates": proj_list(shape.points)}
+                    elif t in [shapefile.POLYLINE, shapefile.POLYLINEZ]:
+                        parts = list(shape.parts) + [len(shape.points)]
+                        lines = [proj_list(shape.points[parts[i]:parts[i+1]])
+                                 for i in range(len(parts)-1)]
+                        return {"type": "LineString", "coordinates": lines[0]} if len(lines)==1 \
+                               else {"type":"MultiLineString","coordinates":lines}
+                    elif t in [shapefile.POLYGON, shapefile.POLYGONZ]:
+                        parts = list(shape.parts) + [len(shape.points)]
+                        rings = [proj_list(shape.points[parts[i]:parts[i+1]])
+                                 for i in range(len(parts)-1)]
+                        return {"type": "Polygon", "coordinates": rings}
+                    return shape.__geo_interface__
+
+                features = []
+                for sr in reader.iterShapeRecords():
+                    props = {field_names[i]: sr.record[i] for i in range(len(field_names))}
+                    props["nombre_archivo"] = zip_label  # <<< AÑADIDO AQUÍ
+                    geom = shape_to_geom(sr.shape)
+                    features.append({"type":"Feature","geometry":geom,"properties":props})
+
+                return features
+
+        except Exception as e:
+            logger.error(f"Error procesando zip interno {zip_label}: {e}")
+            return []
+
+    # -------------------------------------------------------------------------
+    # Descargar ZIP externo
+    # -------------------------------------------------------------------------
     try:
         resp = requests.get(url, timeout=30)
         resp.raise_for_status()
-    except requests.exceptions.Timeout:
-        logger.error("Timeout al descargar el ZIP (30s).")
-        return []
-    except requests.exceptions.RequestException as e:
-        logger.error("Error al descargar el ZIP: %s", e)
-        return []
-
-    try:
-        zip_bytes = io.BytesIO(resp.content)
-        zip_bytes.seek(0)
-        with zipfile.ZipFile(zip_bytes) as zf:
-            names = zf.namelist()
-            logger.debug("Contenido del ZIP: %s", names)
-
-            # Localizar componentes del shapefile.
-            shp_name = shx_name = dbf_name = prj_name = None
-            for name in names:
-                low = name.lower()
-                if low.endswith(".shp"): shp_name = name
-                elif low.endswith(".shx"): shx_name = name
-                elif low.endswith(".dbf"): dbf_name = name
-                elif low.endswith(".prj"): prj_name = name
-
-            if not (shp_name and shx_name and dbf_name):
-                logger.error("El ZIP no contiene un shapefile. completo (.shp/.shx/.dbf).")
-                return []
-
-            # Abrir streams directamente del ZIP
-            shp_f = zf.open(shp_name, "r")
-            shx_f = zf.open(shx_name, "r")
-            dbf_f = zf.open(dbf_name, "r")
-
-            # Leer CRS desde .prj (con fallback de encoding)
-            src_crs = None
-            if prj_name:
-                with zf.open(prj_name, "r") as prj_f:
-                    raw = prj_f.read()
-                    try:
-                        wkt = raw.decode("utf-8")
-                    except UnicodeDecodeError:
-                        wkt = raw.decode("latin-1", errors="ignore")
-                try:
-                    src_crs = CRS.from_wkt(wkt)
-                    logger.debug("CRS origen detectado: %s", src_crs.to_string())
-                except Exception as crs_err:
-                    logger.warning("No se pudo interpretar el .prj: %s", crs_err)
-                    src_crs = None
-
-            # Preparar reproyección
-            transformer = None
-            to_epsg = 4326  # Cambia a None si quieres mantener el CRS original
-
-            if to_epsg is not None and src_crs is not None:
-                try:
-                    dst_crs = CRS.from_epsg(to_epsg)
-                    transformer = Transformer.from_crs(src_crs, dst_crs, always_xy=True)
-                except Exception as tr_err:
-                    logger.warning("No se pudo crear el transformador: %s", tr_err)
-                    transformer = None
-
-            # Reader con encoding Latin-1 para DBF
-            reader = shapefile.Reader(shp=shp_f, shx=shx_f, dbf=dbf_f, encoding="latin-1")
-            fields = reader.fields[1:]
-            field_names = [f[0] for f in fields]
-
-            def project_point(x, y):
-                return transformer.transform(x, y) if transformer else (x, y)
-
-            def project_coords(coords):
-                return [project_point(x, y) for x, y in coords]
-
-            def shape_to_geom(shape):
-                t = shape.shapeType
-                if t in [shapefile.POINT, shapefile.POINTZ, shapefile.POINTM]:
-                    x, y = shape.points[0]
-                    x, y = project_point(x, y)
-                    return {"type": "Point", "coordinates": [x, y]}
-                elif t in [shapefile.MULTIPOINT, shapefile.MULTIPOINTZ, shapefile.MULTIPOINTM]:
-                    return {"type": "MultiPoint", "coordinates": project_coords(shape.points)}
-                elif t in [shapefile.POLYLINE, shapefile.POLYLINEZ, shapefile.POLYLINEM]:
-                    parts = list(shape.parts) + [len(shape.points)]
-                    lines = []
-                    for i in range(len(parts) - 1):
-                        seg = shape.points[parts[i]:parts[i+1]]
-                        lines.append(project_coords(seg))
-                    return {"type": "LineString", "coordinates": lines[0]} if len(lines) == 1 else {"type":"MultiLineString","coordinates":lines}
-                elif t in [shapefile.POLYGON, shapefile.POLYGONZ, shapefile.POLYGONM]:
-                    parts = list(shape.parts) + [len(shape.points)]
-                    rings = []
-                    for i in range(len(parts) - 1):
-                        seg = shape.points[parts[i]:parts[i+1]]
-                        rings.append(project_coords(seg))
-                    return {"type": "Polygon", "coordinates": [rings[0]]} if len(rings) == 1 else {"type":"Polygon","coordinates":rings}
-                else:
-                    return shape.__geo_interface__
-
-            features = []
-            for sr in reader.iterShapeRecords():
-                props = {field_names[i]: sr.record[i] for i in range(len(field_names))}
-                geom = shape_to_geom(sr.shape)
-                features.append({"type": "Feature", "geometry": geom, "properties": props})
-
-            # Cerrar manejadores
-            reader.close()
-            shp_f.close(); shx_f.close(); dbf_f.close()
-
-            gjson = {"type": "FeatureCollection", "features": features}
-            return gjson
-
-    except zipfile.BadZipFile:
-        logger.error("El archivo descargado no es un ZIP válido.")
-        return []
     except Exception as e:
-        logger.exception("Error procesando el ZIP: %s", e)
+        logger.error(f"No se pudo descargar el ZIP: {e}")
         return []
+
+    external_zip = zipfile.ZipFile(io.BytesIO(resp.content))
+    names = external_zip.namelist()
+
+    all_features = []
+
+    # -------------------------------------------------------------------------
+    # Detectar si existen ZIPs dentro del ZIP
+    # -------------------------------------------------------------------------
+    internal_zips = [n for n in names if n.lower().endswith(".zip")]
+
+    if internal_zips:
+        # Procesar cada ZIP interno
+        for zname in internal_zips:
+            logger.debug(f"Procesando ZIP interno: {zname}")
+            data = external_zip.read(zname)
+            feats = process_single_zip(data, zname)
+            all_features.extend(feats)
+    else:
+        # Procesar el ZIP como si fuera un shapefile normal
+        logger.debug("ZIP sin ZIPs internos. Procesando shapefile directo.")
+        data = resp.content
+        all_features.extend(process_single_zip(data, "archivo_principal"))
+
+    return {"type": "FeatureCollection", "features": all_features}
 
 def get_total_count(session: requests.Session, params: dict) -> Optional[int]:
     """Obtiene el número total de features (numberMatched) con limit=1"""
@@ -1317,19 +1321,23 @@ def simplify_geojson(
 # Main
 # =========================
 if __name__ == "__main__":
+    geojson_data, geojson_name = None, None
     logger.setLevel(logging.DEBUG)  # "DEBUG" "INFO", "WARNING", "ERROR"
     path="./geojson/"
 
     '''
     IGN
     '''
-    # geojson_data, geojson_name = IGN_codigos_postales(path=path, descarga_ID_json=True)
+    # geojson_data, geojson_name = IGN_pais(path=path)
+    # geojson_data, geojson_name = IGN_comunidades_autonomas(path=path)
     # geojson_data, geojson_name = IGN_provincias(path=path)
+    # geojson_data, geojson_name = IGN_municipios(path=path)
+    # geojson_data, geojson_name = IGN_codigos_postales(path=path, descarga_ID_json=True)
 
     '''
     INE
     '''
-    geojson_data, geojson_name = INE_secciones_censales(path=path)
+    # geojson_data, geojson_name = INE_secciones_censales(path=path)
 
     '''
     Correos y codigospostales
@@ -1354,9 +1362,9 @@ if __name__ == "__main__":
     Madrid
     '''
     # geojson_data, geojson_name = madrid_barrios(path=path)
-    # # # # geojson_data, geojson_name = madrid_barrios_historicos(path=path)
+    # geojson_data, geojson_name = madrid_barrios_historicos(path=path)
     # geojson_data, geojson_name = madrid_distritos(path=path)
-    # # # # geojson_data, geojson_name = madrid_distritos_historicos(path=path)
+    # geojson_data, geojson_name = madrid_distritos_historicos(path=path)
 
 
     simpl = 0.01
