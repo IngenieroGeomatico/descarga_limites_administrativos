@@ -64,6 +64,9 @@ SLEEP_BETWEEN_REQUESTS = 3.0
 VALID_SCALES = ["60M", "20M", "10M", "03M", "01M"]
 NUTS_LEVELS=[None,0,1,2,3]
 
+VALID_BARRIOS_DISTRITOS_HISTORICOS_ANNO = [None, 1612, 1768, 1802, 1835, 1840, 1845, 1863, 1898, 1955, 1970, 1987]
+VALID_BARRIOS_DISTRITOS_HISTORICOS_CAPAS  = [None, "cuarteles", "parroquias", "termino", "barrios", "comisarias", "juzgados", "distritos"]
+
 
 # =========================
 # Lógica principal
@@ -787,12 +790,26 @@ def madrid_barrios(path: Optional[str]):
     logger.info("Proceso completado.")
     return gjson, gjson_name
 
-def madrid_barrios_historicos(path: Optional[str]):
+def madrid_barrios_historicos(path: Optional[str], year: int = None, layer: str = None):
     url = "https://geoportal.madrid.es/fsdescargas/IDEAM_WBGEOPORTAL/LIMITES_ADMINISTRATIVOS/Barrios/Historicos/Divisiones_Historicas.zip"
     gjson_name = "madrid_barrios_historicos"
 
     logger.info("Descargando ZIP de barrios historicos: %s", url)
     gjson = shp2geojson(url)
+
+    if year:
+       if not year in VALID_BARRIOS_DISTRITOS_HISTORICOS_ANNO:
+           logger.error(f"año {year} no permitido. Valores: {VALID_BARRIOS_DISTRITOS_HISTORICOS_ANNO}")
+           raise ValueError(f"año {year} no permitido. Valores: {VALID_BARRIOS_DISTRITOS_HISTORICOS_ANNO}")
+       gjson["features"] = [f for f in gjson["features"] if f["properties"]["nombre_archivo"] == f"SHAPES_{year}.zip"]
+       gjson_name = f"{gjson_name}_{year}"
+    if layer:
+       if not layer in VALID_BARRIOS_DISTRITOS_HISTORICOS_CAPAS:
+           logger.error(f"capa {layer} no permitido. Valores: {VALID_BARRIOS_DISTRITOS_HISTORICOS_CAPAS}")
+           raise ValueError(f"capa {layer} no permitido. Valores: {VALID_BARRIOS_DISTRITOS_HISTORICOS_CAPAS}")
+       gjson["features"] = [f for f in gjson["features"] if layer.lower() in  f["properties"]["layer"].lower()  ]
+       gjson_name = f"{gjson_name}_{layer}"
+
     save_geojson(gjson, path,gjson_name)
     logger.info("Proceso completado.")
     return gjson, gjson_name
@@ -807,12 +824,26 @@ def madrid_distritos(path: Optional[str]):
     logger.info("Proceso completado.")
     return gjson, gjson_name
 
-def madrid_distritos_historicos(path: Optional[str]):
+def madrid_distritos_historicos(path: Optional[str], year: int = None, layer: str = None):
     url = "https://geoportal.madrid.es/fsdescargas/IDEAM_WBGEOPORTAL/LIMITES_ADMINISTRATIVOS/Distritos/Historicos/Divisiones_Historicas.zip"
     gjson_name = "madrid_distritos_historicos"
 
     logger.info("Descargando ZIP de distritos historicos: %s", url)
     gjson = shp2geojson(url)
+
+    if year:
+       if not year in VALID_BARRIOS_DISTRITOS_HISTORICOS_ANNO:
+           logger.error(f"año {year} no permitido. Valores: {VALID_BARRIOS_DISTRITOS_HISTORICOS_ANNO}")
+           raise ValueError(f"año {year} no permitido. Valores: {VALID_BARRIOS_DISTRITOS_HISTORICOS_ANNO}")
+       gjson["features"] = [f for f in gjson["features"] if f["properties"]["nombre_archivo"] == f"SHAPES_{year}.zip"]
+       gjson_name = f"{gjson_name}_{year}"
+    if layer:
+       if not layer in VALID_BARRIOS_DISTRITOS_HISTORICOS_CAPAS:
+           logger.error(f"capa {layer} no permitido. Valores: {VALID_BARRIOS_DISTRITOS_HISTORICOS_CAPAS}")
+           raise ValueError(f"capa {layer} no permitido. Valores: {VALID_BARRIOS_DISTRITOS_HISTORICOS_CAPAS}")
+       gjson["features"] = [f for f in gjson["features"] if layer.lower() in  f["properties"]["layer"].lower()  ]
+       gjson_name = f"{gjson_name}_{layer}"
+
     save_geojson(gjson, path,gjson_name)
     logger.info("Proceso completado.")
     return gjson, gjson_name
@@ -845,77 +876,99 @@ def shp2geojson(url: str):
 
                 names = zf.namelist()
 
-                shp_name = shx_name = dbf_name = prj_name = None
+                # Agrupar por base (ruta+nombre sin extensión) para soportar múltiples shapefiles
+                bases = {}
                 for name in names:
-                    low = name.lower()
-                    if low.endswith(".shp"): shp_name = name
-                    elif low.endswith(".shx"): shx_name = name
-                    elif low.endswith(".dbf"): dbf_name = name
-                    elif low.endswith(".prj"): prj_name = name
+                    base, ext = os.path.splitext(name)
+                    base_low = base.lower()
+                    ext_low = ext.lower()
+                    if base_low not in bases:
+                        bases[base_low] = {}
+                    bases[base_low][ext_low] = name
 
-                if not (shp_name and shx_name and dbf_name):
+                # Seleccionar solo las bases que contienen shp+shx+dbf
+                valid_bases = [b for b, files in bases.items() if 
+                               ".shp" in files and ".shx" in files and ".dbf" in files]
+
+                if not valid_bases:
                     logger.warning(f"{zip_label}: No contiene shapefile completo.")
                     return []
 
-                # Open files from the ZIP
-                shp_f = zf.open(shp_name)
-                shx_f = zf.open(shx_name)
-                dbf_f = zf.open(dbf_name)
-
-                # Read CRS if available
-                src_crs = None
-                if prj_name:
-                    raw = zf.open(prj_name).read()
-                    try: wkt = raw.decode("utf-8")
-                    except: wkt = raw.decode("latin-1", errors="ignore")
-                    try: src_crs = CRS.from_wkt(wkt)
-                    except: pass
-
-                transformer = None
-                to_epsg = 4326
-                if src_crs:
-                    try:
-                        dst = CRS.from_epsg(to_epsg)
-                        transformer = Transformer.from_crs(src_crs, dst, always_xy=True)
-                    except:
-                        transformer = None
-
-                reader = shapefile.Reader(shp=shp_f, shx=shx_f, dbf=dbf_f, encoding="latin-1")
-                fields = reader.fields[1:]
-                field_names = [f[0] for f in fields]
-
-                def proj(x, y):
-                    return transformer.transform(x, y) if transformer else (x, y)
-
-                def proj_list(coords):
-                    return [proj(x, y) for x, y in coords]
-
-                def shape_to_geom(shape):
-                    t = shape.shapeType
-                    if t in [shapefile.POINT, shapefile.POINTZ]:
-                        x, y = proj(*shape.points[0])
-                        return {"type": "Point", "coordinates": [x, y]}
-                    elif t in [shapefile.MULTIPOINT, shapefile.MULTIPOINTZ]:
-                        return {"type": "MultiPoint", "coordinates": proj_list(shape.points)}
-                    elif t in [shapefile.POLYLINE, shapefile.POLYLINEZ]:
-                        parts = list(shape.parts) + [len(shape.points)]
-                        lines = [proj_list(shape.points[parts[i]:parts[i+1]])
-                                 for i in range(len(parts)-1)]
-                        return {"type": "LineString", "coordinates": lines[0]} if len(lines)==1 \
-                               else {"type":"MultiLineString","coordinates":lines}
-                    elif t in [shapefile.POLYGON, shapefile.POLYGONZ]:
-                        parts = list(shape.parts) + [len(shape.points)]
-                        rings = [proj_list(shape.points[parts[i]:parts[i+1]])
-                                 for i in range(len(parts)-1)]
-                        return {"type": "Polygon", "coordinates": rings}
-                    return shape.__geo_interface__
-
                 features = []
-                for sr in reader.iterShapeRecords():
-                    props = {field_names[i]: sr.record[i] for i in range(len(field_names))}
-                    props["nombre_archivo"] = zip_label  # <<< AÑADIDO AQUÍ
-                    geom = shape_to_geom(sr.shape)
-                    features.append({"type":"Feature","geometry":geom,"properties":props})
+
+                # Procesar cada shapefile encontrado dentro del ZIP
+                for base_low in valid_bases:
+                    logger.debug(f"capa: {base_low}")
+
+                    files = bases[base_low]
+                    shp_name = files['.shp']
+                    shx_name = files['.shx']
+                    dbf_name = files['.dbf']
+                    prj_name = files.get('.prj')
+
+                    # Open files from the ZIP
+                    shp_f = zf.open(shp_name)
+                    shx_f = zf.open(shx_name)
+                    dbf_f = zf.open(dbf_name)
+
+                    # Read CRS if available (por shapefile)
+                    src_crs = None
+                    if prj_name:
+                        raw = zf.open(prj_name).read()
+                        try: wkt = raw.decode("utf-8")
+                        except: wkt = raw.decode("latin-1", errors="ignore")
+                        try: src_crs = CRS.from_wkt(wkt)
+                        except: pass
+
+                    transformer = None
+                    to_epsg = 4326
+                    if src_crs:
+                        try:
+                            dst = CRS.from_epsg(to_epsg)
+                            transformer = Transformer.from_crs(src_crs, dst, always_xy=True)
+                        except:
+                            transformer = None
+
+                    reader = shapefile.Reader(shp=shp_f, shx=shx_f, dbf=dbf_f, encoding="latin-1")
+                    fields = reader.fields[1:]
+                    field_names = [f[0] for f in fields]
+
+                    def proj(x, y):
+                        return transformer.transform(x, y) if transformer else (x, y)
+
+                    def proj_list(coords):
+                        return [proj(x, y) for x, y in coords]
+
+                    def shape_to_geom(shape):
+                        t = shape.shapeType
+                        if t in [shapefile.POINT, shapefile.POINTZ]:
+                            x, y = proj(*shape.points[0])
+                            return {"type": "Point", "coordinates": [x, y]}
+                        elif t in [shapefile.MULTIPOINT, shapefile.MULTIPOINTZ]:
+                            return {"type": "MultiPoint", "coordinates": proj_list(shape.points)}
+                        elif t in [shapefile.POLYLINE, shapefile.POLYLINEZ]:
+                            parts = list(shape.parts) + [len(shape.points)]
+                            lines = [proj_list(shape.points[parts[i]:parts[i+1]])
+                                     for i in range(len(parts)-1)]
+                            return {"type": "LineString", "coordinates": lines[0]} if len(lines)==1 \
+                                   else {"type":"MultiLineString","coordinates":lines}
+                        elif t in [shapefile.POLYGON, shapefile.POLYGONZ]:
+                            parts = list(shape.parts) + [len(shape.points)]
+                            rings = [proj_list(shape.points[parts[i]:parts[i+1]])
+                                     for i in range(len(parts)-1)]
+                            return {"type": "Polygon", "coordinates": rings}
+                        return shape.__geo_interface__
+
+                    # Nombre de capa: zip_label + nombre del shp (sin extensión)
+                    shp_basename = os.path.splitext(os.path.basename(shp_name))[0]
+                    layer_name = f"{zip_label}_{shp_basename}"
+
+                    for sr in reader.iterShapeRecords():
+                        props = {field_names[i]: sr.record[i] for i in range(len(field_names))}
+                        props["nombre_archivo"] = zip_label
+                        props["layer"] = layer_name
+                        geom = shape_to_geom(sr.shape)
+                        features.append({"type":"Feature","geometry":geom,"properties":props})
 
                 return features
 
@@ -1315,7 +1368,88 @@ def simplify_geojson(
         logger.error("Error en simplify_geojson", exc_info=True)
         raise
 
+def fix_topology(geojson_data: dict, snap_tolerance: float = 0.0, dissolve: bool = False) -> dict:
+    """Arregla la topología de una FeatureCollection GeoJSON.
 
+    - Valida geometrías (intenta `make_valid` o `buffer(0)` como fallback).
+    - Opcionalmente hace `snap` con tolerancia `snap_tolerance` (grados).
+    - Si `dissolve=True` disuelve/une todas las geometrías y devuelve los polígonos resultantes
+      como features (se pierden las propiedades originales).
+
+    Devuelve un FeatureCollection GeoJSON corregido.
+    """
+    try:
+        from shapely.ops import unary_union, snap
+        try:
+            from shapely.ops import make_valid as shapely_make_valid
+        except Exception:
+            shapely_make_valid = None
+        from shapely.geometry import mapping, Polygon, MultiPolygon
+
+        gdf = gpd.GeoDataFrame.from_features(geojson_data.get("features", []), crs="EPSG:4326")
+
+        if gdf.empty:
+            logger.warning("fix_topology: GeoDataFrame vacío")
+            return {"type": "FeatureCollection", "features": []}
+
+        # 1) Validar geometrías
+        def _make_valid(g):
+            if g is None:
+                return g
+            try:
+                if shapely_make_valid:
+                    mg = shapely_make_valid(g)
+                else:
+                    mg = g if g.is_valid else g.buffer(0)
+                return mg
+            except Exception:
+                try:
+                    return g.buffer(0)
+                except Exception:
+                    return g
+
+        gdf["geometry"] = gdf.geometry.apply(_make_valid)
+
+        # 2) Snap (si se solicita)
+        if snap_tolerance and snap_tolerance > 0:
+            union = unary_union([g for g in gdf.geometry if g is not None and not g.is_empty])
+            gdf["geometry"] = gdf.geometry.apply(
+                lambda geom: snap(geom, union, snap_tolerance) if geom is not None and not geom.is_empty else geom
+            )
+            # asegurar validez
+            gdf["geometry"] = gdf.geometry.apply(lambda g: g if g is None or g.is_valid else g.buffer(0))
+
+        # 3) Opcional: disolver/union (quita solapes, produce geometrías no superpuestas)
+        if dissolve:
+            merged = unary_union([g for g in gdf.geometry if g is not None and not g.is_empty])
+            features = []
+            if merged is None or merged.is_empty:
+                return {"type": "FeatureCollection", "features": []}
+
+            geoms = []
+            if isinstance(merged, Polygon):
+                geoms = [merged]
+            elif isinstance(merged, MultiPolygon):
+                geoms = list(merged.geoms)
+            else:
+                # si es otro tipo, lo incluimos tal cual
+                geoms = [merged]
+
+            for geom in geoms:
+                features.append({"type": "Feature", "geometry": mapping(geom), "properties": {"source": "fix_topology"}})
+
+            logger.info("fix_topology: disuelto en %d feature(s)", len(features))
+            return {"type": "FeatureCollection", "features": features}
+
+        # 4) Si no disolvemos, devolvemos las mismas features con geometrías corregidas
+        gdf = gdf[gdf.geometry.notna() & (~gdf.geometry.is_empty)].copy()
+        out = {"type": "FeatureCollection", "features": json.loads(gdf.to_json())["features"]}
+        logger.info("fix_topology: resultado %d feature(s)", len(out["features"]))
+        return out
+
+    except Exception as e:
+        logger.exception("Error en fix_topology: %s", e)
+        return {"type": "FeatureCollection", "features": []}
 
 # =========================
 # Main
@@ -1363,9 +1497,11 @@ if __name__ == "__main__":
     '''
     # geojson_data, geojson_name = madrid_barrios(path=path)
     # geojson_data, geojson_name = madrid_barrios_historicos(path=path)
+    geojson_data, geojson_name = madrid_barrios_historicos(path=path, year=1612, layer="cuarteles")
     # geojson_data, geojson_name = madrid_distritos(path=path)
     # geojson_data, geojson_name = madrid_distritos_historicos(path=path)
 
+    geojson_data = fix_topology(geojson_data, snap_tolerance= 0.0001)
 
     simpl = 0.01
 
