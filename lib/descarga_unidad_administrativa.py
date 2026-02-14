@@ -1451,3 +1451,4 @@ def fix_topology(geojson_data: dict, snap_tolerance: float = 0.0, dissolve: bool
         logger.exception("Error en fix_topology: %s", e)
         return {"type": "FeatureCollection", "features": []}
 
+
