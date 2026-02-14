@@ -1501,10 +1501,10 @@ if __name__ == "__main__":
     # geojson_data, geojson_name = madrid_distritos(path=path)
     # geojson_data, geojson_name = madrid_distritos_historicos(path=path)
 
-    geojson_data = fix_topology(geojson_data, snap_tolerance= 0.0001)
+    snap_tolerance= 0.0001
+    geojson_data = fix_topology(geojson_data, snap_tolerance= snap_tolerance)
 
     simpl = 0.01
-
     geojson_simpl = simplify_geojson(
         geojson_data=geojson_data,
         simplification_tolerance=simpl,
