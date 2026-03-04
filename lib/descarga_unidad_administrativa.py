@@ -67,9 +67,19 @@ SLEEP_BETWEEN_REQUESTS = 3.0
 VALID_SCALES = ["60M", "20M", "10M", "03M", "01M"]
 NUTS_LEVELS=[None,0,1,2,3]
 
-VALID_BARRIOS_DISTRITOS_HISTORICOS_ANNO = [None, 1612, 1768, 1802, 1835, 1840, 1845, 1863, 1898, 1955, 1970, 1987]
-VALID_BARRIOS_DISTRITOS_HISTORICOS_CAPAS  = [None, "cuarteles", "parroquias", "termino", "barrios", "comisarias", "juzgados", "distritos"]
-
+CAPAS_POR_ANNIO_BARRIOS_DISTRITOS = {
+    1612: ["cuarteles", "parroquias", "termino"],
+    1768: ["barrios", "cuarteles", "termino"],
+    1802: ["barrios", "cuarteles", "termino"],
+    1835: ["barrios", "comisarias", "termino"],
+    1840: ["barrios", "cuarteles", "distritos", "juzgados", "parroquias", "termino"],
+    1845: ["barrios", "cuarteles", "distritos", "termino"],
+    1863: ["barrios", "distritos", "parroquias", "termino"],
+    1898: ["barrios", "distritos", "termino"],
+    1955: ["barrios", "distritos", "termino"],
+    1970: ["barrios", "distritos", "termino"],
+    1987: ["barrios", "distritos", "termino"]
+}
 
 # =========================
 # Lógica principal
@@ -793,27 +803,67 @@ def madrid_barrios(path: Optional[str]):
     logger.info("Proceso completado.")
     return gjson, gjson_name
 
-def madrid_barrios_historicos(path: Optional[str], year: int = None, layer: str = None):
-    url = "https://geoportal.madrid.es/fsdescargas/IDEAM_WBGEOPORTAL/LIMITES_ADMINISTRATIVOS/Barrios/Historicos/Divisiones_Historicas.zip"
+def madrid_barrios_historicos(
+    path: Optional[str],
+    year: int = None,
+    layer: str = None
+):
+    url = (
+        "https://geoportal.madrid.es/fsdescargas/IDEAM_WBGEOPORTAL/"
+        "LIMITES_ADMINISTRATIVOS/Barrios/Historicos/Divisiones_Historicas.zip"
+    )
     gjson_name = "madrid_barrios_historicos"
 
     logger.info("Descargando ZIP de barrios historicos: %s", url)
     gjson = shp2geojson(url)
 
-    if year:
-       if not year in VALID_BARRIOS_DISTRITOS_HISTORICOS_ANNO:
-           logger.error(f"año {year} no permitido. Valores: {VALID_BARRIOS_DISTRITOS_HISTORICOS_ANNO}")
-           raise ValueError(f"año {year} no permitido. Valores: {VALID_BARRIOS_DISTRITOS_HISTORICOS_ANNO}")
-       gjson["features"] = [f for f in gjson["features"] if f["properties"]["nombre_archivo"] == f"SHAPES_{year}.zip"]
-       gjson_name = f"{gjson_name}_{year}"
-    if layer:
-       if not layer in VALID_BARRIOS_DISTRITOS_HISTORICOS_CAPAS:
-           logger.error(f"capa {layer} no permitido. Valores: {VALID_BARRIOS_DISTRITOS_HISTORICOS_CAPAS}")
-           raise ValueError(f"capa {layer} no permitido. Valores: {VALID_BARRIOS_DISTRITOS_HISTORICOS_CAPAS}")
-       gjson["features"] = [f for f in gjson["features"] if layer.lower() in  f["properties"]["layer"].lower()  ]
-       gjson_name = f"{gjson_name}_{layer}"
+    VALID_ANNOS = set(CAPAS_POR_ANNIO_BARRIOS_DISTRITOS.keys())
+    VALID_CAPAS_GLOBALES = {
+        capa for capas in CAPAS_POR_ANNIO_BARRIOS_DISTRITOS.values() for capa in capas
+    }
 
-    save_geojson(gjson, path,gjson_name)
+    # ---- filtro por año ----
+    if year is not None:
+        if year not in VALID_ANNOS:
+            logger.error(
+                "año %s no permitido. Valores: %s",
+                year, sorted(VALID_ANNOS)
+            )
+            raise ValueError(
+                f"año {year} no permitido. Valores: {sorted(VALID_ANNOS)}"
+            )
+
+        gjson["features"] = [
+            f for f in gjson["features"]
+            if f["properties"].get("nombre_archivo") == f"SHAPES_{year}.zip"
+        ]
+        gjson_name = f"{gjson_name}_{year}"
+
+    # ---- filtro por capa ----
+    if layer is not None:
+        layer = layer.lower()
+
+        if year is not None:
+            capas_validas = CAPAS_POR_ANNIO_BARRIOS_DISTRITOS[year]
+        else:
+            capas_validas = VALID_CAPAS_GLOBALES
+
+        if layer not in capas_validas:
+            logger.error(
+                "capa %s no permitida para año %s. Valores: %s",
+                layer, year, capas_validas
+            )
+            raise ValueError(
+                f"capa {layer} no permitida para año {year}. Valores: {capas_validas}"
+            )
+
+        gjson["features"] = [
+            f for f in gjson["features"]
+            if layer in f["properties"]["layer"].lower()
+        ]
+        gjson_name = f"{gjson_name}_{layer}"
+
+    save_geojson(gjson, path, gjson_name)
     logger.info("Proceso completado.")
     return gjson, gjson_name
 
@@ -834,23 +884,55 @@ def madrid_distritos_historicos(path: Optional[str], year: int = None, layer: st
     logger.info("Descargando ZIP de distritos historicos: %s", url)
     gjson = shp2geojson(url)
 
-    if year:
-       if not year in VALID_BARRIOS_DISTRITOS_HISTORICOS_ANNO:
-           logger.error(f"año {year} no permitido. Valores: {VALID_BARRIOS_DISTRITOS_HISTORICOS_ANNO}")
-           raise ValueError(f"año {year} no permitido. Valores: {VALID_BARRIOS_DISTRITOS_HISTORICOS_ANNO}")
-       gjson["features"] = [f for f in gjson["features"] if f["properties"]["nombre_archivo"] == f"SHAPES_{year}.zip"]
-       gjson_name = f"{gjson_name}_{year}"
-    if layer:
-       if not layer in VALID_BARRIOS_DISTRITOS_HISTORICOS_CAPAS:
-           logger.error(f"capa {layer} no permitido. Valores: {VALID_BARRIOS_DISTRITOS_HISTORICOS_CAPAS}")
-           raise ValueError(f"capa {layer} no permitido. Valores: {VALID_BARRIOS_DISTRITOS_HISTORICOS_CAPAS}")
-       gjson["features"] = [f for f in gjson["features"] if layer.lower() in  f["properties"]["layer"].lower()  ]
-       gjson_name = f"{gjson_name}_{layer}"
+    VALID_ANNOS = set(CAPAS_POR_ANNIO_BARRIOS_DISTRITOS.keys())
+    VALID_CAPAS_GLOBALES = {
+        capa for capas in CAPAS_POR_ANNIO_BARRIOS_DISTRITOS.values() for capa in capas
+    }
 
-    save_geojson(gjson, path,gjson_name)
+    # ---- filtro por año ----
+    if year is not None:
+        if year not in VALID_ANNOS:
+            logger.error(
+                "año %s no permitido. Valores: %s",
+                year, sorted(VALID_ANNOS)
+            )
+            raise ValueError(
+                f"año {year} no permitido. Valores: {sorted(VALID_ANNOS)}"
+            )
+
+        gjson["features"] = [
+            f for f in gjson["features"]
+            if f["properties"].get("nombre_archivo") == f"SHAPES_{year}.zip"
+        ]
+        gjson_name = f"{gjson_name}_{year}"
+
+    # ---- filtro por capa ----
+    if layer is not None:
+        layer = layer.lower()
+
+        if year is not None:
+            capas_validas = CAPAS_POR_ANNIO_BARRIOS_DISTRITOS[year]
+        else:
+            capas_validas = VALID_CAPAS_GLOBALES
+
+        if layer not in capas_validas:
+            logger.error(
+                "capa %s no permitida para año %s. Valores: %s",
+                layer, year, capas_validas
+            )
+            raise ValueError(
+                f"capa {layer} no permitida para año {year}. Valores: {capas_validas}"
+            )
+
+        gjson["features"] = [
+            f for f in gjson["features"]
+            if layer in f["properties"]["layer"].lower()
+        ]
+        gjson_name = f"{gjson_name}_{layer}"
+
+    save_geojson(gjson, path, gjson_name)
     logger.info("Proceso completado.")
     return gjson, gjson_name
-
 
 
 
@@ -1447,3 +1529,5 @@ def fix_topology(geojson_data: dict, snap_tolerance: float = 0.0, dissolve: bool
     except Exception as e:
         logger.exception("Error en fix_topology: %s", e)
         return {"type": "FeatureCollection", "features": []}
+
+
