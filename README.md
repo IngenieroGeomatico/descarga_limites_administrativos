@@ -31,6 +31,7 @@ python run.py
 	- `correos_codigos_postales()`
 	- `eurostat_*()` (países, NUTS, LAU, URAU, costas,...)
 	- `madrid_barrios()`, `madrid_barrios_historicos()`
+ - También permite arreglar topología y simplificar la geometría descargada
 
 **Datos incluidos**
 - Carpeta de salida/ejemplo: [geojson/](geojson/)
