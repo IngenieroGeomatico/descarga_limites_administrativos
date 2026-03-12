@@ -27,19 +27,13 @@ python run.py
 - Localizadas en [lib/descarga_unidad_administrativa.py](lib/descarga_unidad_administrativa.py).
 - Algunas funciones disponibles:
 	- `IGN_pais()`, `IGN_comunidades_autonomas()`, `IGN_provincias()`, `IGN_municipios()`
-	- `IGN_codigos_postales()` (descarga y consulta geocoders)
+	- `IGN_codigos_postales()` (descarga y consulta geocoder)
 	- `correos_codigos_postales()`
-	- `eurostat_*()` (países, NUTS, LAU, URAU, costas, comunas)
+	- `eurostat_*()` (países, NUTS, LAU, URAU, costas,...)
 	- `madrid_barrios()`, `madrid_barrios_historicos()`
 
 **Datos incluidos**
 - Carpeta de salida/ejemplo: [geojson/](geojson/)
-- Ejemplos de archivos ya presentes:
-	- [geojson/eurostat_countries.geojson](geojson/eurostat_countries.geojson)
-	- [geojson/eurostat_communes.geojson](geojson/eurostat_communes.geojson)
-	- [geojson/INE_secciones_censales.geojson](geojson/INE_secciones_censales.geojson)
-	- [geojson/madrid_barrios.geojson](geojson/madrid_barrios.geojson)
-	- [geojson/codigospostales_codigos_postales.geojson](geojson/codigospostales_codigos_postales.geojson)
 
 **Salida**
 - Los resultados se guardan en la carpeta indicada por `path` (por defecto `./geojson/`).
