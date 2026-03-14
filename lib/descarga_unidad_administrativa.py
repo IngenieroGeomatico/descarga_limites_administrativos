@@ -998,7 +998,7 @@ def shp2geojson(url: str):
                     if prj_name:
                         raw = zf.open(prj_name).read()
                         try: wkt = raw.decode("utf-8")
-                        except: wkt = raw.decode("latin-1", errors="ignore")
+                        except: wkt = raw.decode("utf-8", errors="ignore")
                         try: src_crs = CRS.from_wkt(wkt)
                         except: pass
 
@@ -1011,7 +1011,7 @@ def shp2geojson(url: str):
                         except:
                             transformer = None
 
-                    reader = shapefile.Reader(shp=shp_f, shx=shx_f, dbf=dbf_f, encoding="latin-1")
+                    reader = shapefile.Reader(shp=shp_f, shx=shx_f, dbf=dbf_f, encoding="utf-8")
                     fields = reader.fields[1:]
                     field_names = [f[0] for f in fields]
 
