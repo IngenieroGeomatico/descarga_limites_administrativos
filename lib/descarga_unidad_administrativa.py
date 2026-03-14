@@ -16,6 +16,9 @@ from xml.etree import ElementTree as ET
 from typing import Optional, Tuple, Dict, Any
 from shapely.geometry.base import BaseGeometry
 from shapely.geometry import shape, mapping, Polygon, MultiPolygon
+from shapely.ops import unary_union, snap
+from shapely.ops import make_valid as shapely_make_valid
+from shapely.geometry import mapping, Polygon, MultiPolygon
 
 
 # =========================
@@ -1461,12 +1464,6 @@ def fix_topology(geojson_data: dict, snap_tolerance: float = 0.0, dissolve: bool
     Devuelve un FeatureCollection GeoJSON corregido.
     """
     try:
-        from shapely.ops import unary_union, snap
-        try:
-            from shapely.ops import make_valid as shapely_make_valid
-        except Exception:
-            shapely_make_valid = None
-        from shapely.geometry import mapping, Polygon, MultiPolygon
 
         gdf = gpd.GeoDataFrame.from_features(geojson_data.get("features", []), crs="EPSG:4326")
 
