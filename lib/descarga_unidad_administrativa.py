@@ -16,9 +16,6 @@ from xml.etree import ElementTree as ET
 from typing import Optional, Tuple, Dict, Any
 from shapely.geometry.base import BaseGeometry
 from shapely.geometry import shape, mapping, Polygon, MultiPolygon
-from shapely.ops import unary_union, snap
-from shapely.ops import make_valid as shapely_make_valid
-from shapely.geometry import mapping, Polygon, MultiPolygon
 
 
 # =========================
@@ -1001,7 +998,7 @@ def shp2geojson(url: str):
                     if prj_name:
                         raw = zf.open(prj_name).read()
                         try: wkt = raw.decode("utf-8")
-                        except: wkt = raw.decode("latin-1", errors="ignore")
+                        except: wkt = raw.decode("utf-8", errors="ignore")
                         try: src_crs = CRS.from_wkt(wkt)
                         except: pass
 
@@ -1014,7 +1011,7 @@ def shp2geojson(url: str):
                         except:
                             transformer = None
 
-                    reader = shapefile.Reader(shp=shp_f, shx=shx_f, dbf=dbf_f, encoding="latin-1")
+                    reader = shapefile.Reader(shp=shp_f, shx=shx_f, dbf=dbf_f, encoding="utf-8")
                     fields = reader.fields[1:]
                     field_names = [f[0] for f in fields]
 
@@ -1464,6 +1461,12 @@ def fix_topology(geojson_data: dict, snap_tolerance: float = 0.0, dissolve: bool
     Devuelve un FeatureCollection GeoJSON corregido.
     """
     try:
+        from shapely.ops import unary_union, snap
+        try:
+            from shapely.ops import make_valid as shapely_make_valid
+        except Exception:
+            shapely_make_valid = None
+        from shapely.geometry import mapping, Polygon, MultiPolygon
 
         gdf = gpd.GeoDataFrame.from_features(geojson_data.get("features", []), crs="EPSG:4326")
 
